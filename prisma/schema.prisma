@@ -1,0 +1,429 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  ARCHIVIST
+  CONTRIBUTOR
+  VIEWER
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING_SETUP
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  PREFER_NOT_TO_SAY
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AssetState {
+  PENDING_UPLOAD
+  PROCESSING
+  READY
+  FAILED
+  PENDING_DELETION
+  DELETED
+  ARCHIVED
+  QUARANTINED
+}
+
+enum VariantType {
+  THUMBNAIL_SM
+  THUMBNAIL_MD
+  THUMBNAIL_LG
+  OPTIMIZED_WEBP
+  STREAM_HLS
+  STREAM_MP4_HD
+}
+
+enum TagCategory {
+  EVENT
+  LOCATION
+  ACADEMIC_YEAR
+  ACTIVITY
+  CUSTOM
+}
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  fullName      String
+  gender        Gender      @default(PREFER_NOT_TO_SAY)
+  isGenderLocked Boolean    @default(false)
+  role          Role        @default(VIEWER)
+  status        UserStatus  @default(ACTIVE)
+  avatarUrl     String?
+  bio           String?
+  graduationYear Int?
+  collegeId     String?
+  invitedById   String?
+  invitedBy     User?       @relation("UserInvites", fields: [invitedById], references: [id])
+  invitees      User[]      @relation("UserInvites")
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  lastLoginAt   DateTime?
+
+  inviteCodesCreated InviteCode[]  @relation("InviteCreator")
+  uploadedAssets     MediaAsset[]  @relation("AssetUploader")
+  createdAlbums      Album[]       @relation("AlbumCreator")
+  auditLogs          AuditTrail[]
+  accessLogs         AccessLog[]
+  taggedInPhotos     PersonTag[]   @relation("TaggedUser")
+  assignedPersonTags PersonTag[]   @relation("PersonTagCreator")
+  reviewedRequests   AccessRequest[] @relation("ReviewedRequests")
+  ownedGroups        Group[]       @relation("GroupOwner")
+  groupMemberships   GroupMember[] @relation("UserGroupMemberships")
+  groupInvitesSent   GroupMember[] @relation("GroupMemberInviter")
+  deletionRequests   DeletionRequest[] @relation("DeletionRequester")
+  reviewedDeletions  DeletionRequest[] @relation("DeletionReviewer")
+
+  @@index([role])
+  @@index([status])
+  @@index([gender])
+}
+
+model AccessRequest {
+  id             String        @id @default(uuid())
+  fullName       String
+  email          String        @unique
+  collegeId      String?
+  batchYear      Int
+  department     String?
+  gender         Gender        @default(PREFER_NOT_TO_SAY)
+  verificationNote String?
+  status         RequestStatus @default(PENDING)
+  reviewedById   String?
+  reviewedBy     User?         @relation("ReviewedRequests", fields: [reviewedById], references: [id])
+  rejectionReason String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+  @@index([email])
+}
+
+model InviteCode {
+  id           String      @id @default(uuid())
+  code         String      @unique
+  role         Role        @default(CONTRIBUTOR)
+  maxUses      Int         @default(1)
+  usesCount    Int         @default(0)
+  createdById  String
+  createdBy    User        @relation("InviteCreator", fields: [createdById], references: [id])
+  note         String?
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([code])
+}
+
+enum VisibilityMode {
+  PUBLIC_BATCH
+  GROUP_ONLY
+  GENDER_RESTRICTED
+  GROUP_AND_GENDER
+  SPECIFIC_USERS
+  PRIVATE_CREATOR
+}
+
+model MediaAsset {
+  id               String          @id @default(uuid())
+  storageKey       String          @unique
+  originalFilename String
+  mimeType         String
+  fileSizeBytes    BigInt
+  sha256Hash       String?         @unique
+  status           AssetState      @default(PENDING_UPLOAD)
+  
+  uploaderId       String
+  uploader         User            @relation("AssetUploader", fields: [uploaderId], references: [id])
+
+  // Access & Visibility Control (PRD Section 9)
+  visibilityMode   VisibilityMode  @default(PUBLIC_BATCH)
+  allowedGender    Gender?
+  groupId          String?
+  group            Group?          @relation("GroupMedia", fields: [groupId], references: [id])
+  allowedUserIds   String[]        @default([])
+
+  // Metadata
+  capturedAt       DateTime?
+  captureYear      Int?
+  width            Int?
+  height           Int?
+  durationSeconds  Float?
+  deviceMake       String?
+  deviceModel      String?
+  locationName     String?
+  latitude         Float?
+  longitude        Float?
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  isArchived       Boolean         @default(false)
+
+  variants         MediaVariant[]
+  albumAssets      AlbumAsset[]
+  assetTags        AssetTag[]
+  personTags       PersonTag[]
+  accessLogs       AccessLog[]
+  deletionRequests DeletionRequest[]
+
+  @@index([status])
+  @@index([visibilityMode])
+  @@index([groupId])
+  @@index([allowedGender])
+  @@index([capturedAt])
+  @@index([captureYear])
+  @@index([uploaderId])
+  @@index([createdAt])
+}
+
+model MediaVariant {
+  id             String       @id @default(uuid())
+  assetId        String
+  asset          MediaAsset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  variantType    VariantType
+  storageKey     String       @unique
+  mimeType       String
+  fileSizeBytes  BigInt
+  width          Int?
+  height         Int?
+  durationSeconds Float?
+  bitrateKbps    Int?
+  createdAt      DateTime     @default(now())
+
+  @@unique([assetId, variantType])
+  @@index([variantType])
+}
+
+model Album {
+  id          String       @id @default(uuid())
+  title       String
+  description String?
+  coverAssetId String?
+  isPrivate   Boolean      @default(false)
+  createdById String
+  createdBy   User         @relation("AlbumCreator", fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  albumAssets AlbumAsset[]
+
+  @@index([createdById])
+  @@index([title])
+}
+
+model AlbumAsset {
+  id        String     @id @default(uuid())
+  albumId   String
+  album     Album      @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  assetId   String
+  asset     MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  position  Int        @default(0)
+  addedAt   DateTime   @default(now())
+
+  @@unique([albumId, assetId])
+  @@index([albumId, position])
+}
+
+model Tag {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  category  TagCategory @default(CUSTOM)
+  createdAt DateTime    @default(now())
+
+  assetTags AssetTag[]
+
+  @@index([name])
+  @@index([category])
+}
+
+model AssetTag {
+  id        String     @id @default(uuid())
+  assetId   String
+  asset     MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, tagId])
+  @@index([assetId])
+  @@index([tagId])
+}
+
+model PersonTag {
+  id             String     @id @default(uuid())
+  assetId        String
+  asset          MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?      @relation("TaggedUser", fields: [userId], references: [id])
+  manualName     String?
+  boxX           Float?
+  boxY           Float?
+  boxWidth       Float?
+  boxHeight      Float?
+  createdById    String
+  createdBy      User       @relation("PersonTagCreator", fields: [createdById], references: [id])
+  createdAt      DateTime   @default(now())
+
+  @@index([assetId])
+  @@index([userId])
+}
+
+model AccessLog {
+  id        String     @id @default(uuid())
+  assetId   String
+  asset     MediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id])
+  ipAddress String?
+  userAgent String?
+  action    String     @default("VIEW")
+  timestamp DateTime   @default(now())
+
+  @@index([assetId])
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model AuditTrail {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  resource   String
+  resourceId String?
+  detailsJson Json?
+  ipAddress  String?
+  timestamp  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
+}
+
+enum GroupType {
+  FRIENDS
+  HOSTEL
+  CLASS
+  PROJECT_TEAM
+  EVENT_TEAM
+  TRIP
+  DEPARTMENT
+  CUSTOM
+}
+
+enum GroupStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum GroupRole {
+  OWNER
+  MODERATOR
+  MEMBER
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  PENDING
+  REMOVED
+  LEFT
+}
+
+model Group {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?
+  type           GroupType    @default(CUSTOM)
+  status         GroupStatus  @default(ACTIVE)
+  isAdminManaged Boolean      @default(false)
+  maxMembers     Int?
+  
+  ownerId        String
+  owner          User         @relation("GroupOwner", fields: [ownerId], references: [id])
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  members        GroupMember[]
+  mediaAssets    MediaAsset[]  @relation("GroupMedia")
+
+  @@index([ownerId])
+  @@index([type])
+  @@index([status])
+}
+
+model GroupMember {
+  id         String           @id @default(uuid())
+  groupId    String
+  group      Group            @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User             @relation("UserGroupMemberships", fields: [userId], references: [id], onDelete: Cascade)
+  role       GroupRole        @default(MEMBER)
+  status     MembershipStatus @default(ACTIVE)
+  joinedAt   DateTime         @default(now())
+  
+  invitedById String?
+  invitedBy   User?           @relation("GroupMemberInviter", fields: [invitedById], references: [id])
+
+  @@unique([groupId, userId])
+  @@index([groupId, status])
+  @@index([userId, status])
+}
+
+enum DeletionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model DeletionRequest {
+  id              String         @id @default(uuid())
+  assetId         String
+  asset           MediaAsset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  requesterId     String
+  requester       User           @relation("DeletionRequester", fields: [requesterId], references: [id])
+  reason          String
+  status          DeletionStatus @default(PENDING)
+  
+  // Two-Man Rule Approval Tracking (PRD Section 26)
+  reviewedById    String?
+  reviewedBy      User?          @relation("DeletionReviewer", fields: [reviewedById], references: [id])
+  rejectionReason String?
+  
+  gracePeriodEnds DateTime
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status])
+  @@index([assetId])
+  @@index([requesterId])
+}
+
+
