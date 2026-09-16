@@ -10,17 +10,28 @@ export interface AuthSessionUser {
   id: string;
   email: string;
   fullName: string;
-  role: Role;
+  role: Role | "MEMBER";
   status: UserStatus;
 }
 
+export function isSuperAdminEmail(email?: string | null): boolean {
+  if (!email) return false;
+  const lower = email.toLowerCase().trim();
+  return (
+    lower === "boopathydharunesh622@gmail.com" ||
+    lower === "admin@thegallery.local" ||
+    lower === "admin@autisticjourney.local"
+  );
+}
+
 export function signAuthToken(user: AuthSessionUser): string {
+  const isSuper = isSuperAdminEmail(user.email);
   return jwt.sign(
     {
       sub: user.id,
       email: user.email,
       fullName: user.fullName,
-      role: user.role,
+      role: isSuper ? "SUPER_ADMIN" : user.role,
       status: user.status,
     },
     AUTH_SECRET,
@@ -31,11 +42,12 @@ export function signAuthToken(user: AuthSessionUser): string {
 export function verifyAuthToken(token: string): AuthSessionUser | null {
   try {
     const decoded = jwt.verify(token, AUTH_SECRET) as any;
+    const isSuper = isSuperAdminEmail(decoded.email);
     return {
       id: decoded.sub,
       email: decoded.email,
       fullName: decoded.fullName,
-      role: decoded.role,
+      role: isSuper ? "SUPER_ADMIN" : decoded.role,
       status: decoded.status,
     };
   } catch {

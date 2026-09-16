@@ -1,0 +1,11 @@
+# Cloudflare Tunnel Configuration for The Gallery
+# Domain: thegallery.theautisticjourney.me
+
+ingress:
+  - hostname: thegallery.theautisticjourney.me
+    service: http://localhost:3000
+    originRequest:
+      noTLSVerify: true
+  - hostname: "*.theautisticjourney.me"
+    service: http://localhost:3000
+  - service: http_status:404

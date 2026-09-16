@@ -1,30 +1,20 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { listVaultAccessRequests, reviewVaultAccessRequest } from "@/lib/vaultData";
 import { z } from "zod";
-import crypto from "crypto";
 
-// GET /api/admin/access-requests - List pending, approved, or rejected requests
+// GET /api/admin/access-requests - List pending, approved, or rejected member requests
 export async function GET(req: Request) {
   try {
     const user = await getSessionUser();
-    if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN" && user.role !== "ARCHIVIST")) {
+    if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
-    const statusFilter = searchParams.get("status") || "PENDING";
+    const statusFilter = searchParams.get("status") || "ALL";
 
-    const requests = await db.accessRequest.findMany({
-      where: statusFilter === "ALL" ? {} : { status: statusFilter as any },
-      orderBy: { createdAt: "desc" },
-      include: {
-        reviewedBy: {
-          select: { fullName: true, email: true },
-        },
-      },
-    });
-
+    const requests = listVaultAccessRequests(statusFilter);
     return NextResponse.json({ requests });
   } catch (error: any) {
     return NextResponse.json(
@@ -35,12 +25,12 @@ export async function GET(req: Request) {
 }
 
 const reviewSchema = z.object({
-  requestId: z.string().uuid(),
+  requestId: z.string().min(1),
   action: z.enum(["APPROVE", "REJECT"]),
   rejectionReason: z.string().optional(),
 });
 
-// POST /api/admin/access-requests - Approve or Reject request
+// POST /api/admin/access-requests - Approve (Accept) or Reject member request
 export async function POST(req: Request) {
   try {
     const user = await getSessionUser();
@@ -60,91 +50,25 @@ export async function POST(req: Request) {
 
     const { requestId, action, rejectionReason } = result.data;
 
-    const accessReq = await db.accessRequest.findUnique({
-      where: { id: requestId },
+    const outcome = reviewVaultAccessRequest({
+      requestId,
+      action,
+      reviewedById: user.id,
+      rejectionReason,
     });
 
-    if (!accessReq) {
-      return NextResponse.json({ error: "Access request not found" }, { status: 404 });
+    if (!outcome.success) {
+      return NextResponse.json({ error: outcome.error || "Review action failed" }, { status: 400 });
     }
-
-    if (accessReq.status !== "PENDING") {
-      return NextResponse.json(
-        { error: `Request has already been marked as ${accessReq.status}` },
-        { status: 400 }
-      );
-    }
-
-    if (action === "REJECT") {
-      const updated = await db.accessRequest.update({
-        where: { id: requestId },
-        data: {
-          status: "REJECTED",
-          reviewedById: user.id,
-          rejectionReason: rejectionReason || "Verification criteria not met",
-        },
-      });
-
-      await db.auditTrail.create({
-        data: {
-          userId: user.id,
-          action: "ACCESS_REQUEST_REJECTED",
-          resource: "AccessRequest",
-          resourceId: accessReq.id,
-          detailsJson: { email: accessReq.email, reason: rejectionReason },
-        },
-      });
-
-      return NextResponse.json({ message: "Request rejected", request: updated });
-    }
-
-    // ACTION: APPROVE
-    // Automatically generate a single-use onboarding invite code bound for this member
-    const autoCode = `AJ-APPROVED-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
-
-    const { inviteCode, updatedRequest } = await db.$transaction(async (tx) => {
-      const code = await tx.inviteCode.create({
-        data: {
-          code: autoCode,
-          role: "CONTRIBUTOR",
-          maxUses: 1,
-          createdById: user.id,
-          note: `Auto-generated for approved applicant: ${accessReq.fullName} (${accessReq.email})`,
-        },
-      });
-
-      const updated = await tx.accessRequest.update({
-        where: { id: requestId },
-        data: {
-          status: "APPROVED",
-          reviewedById: user.id,
-        },
-      });
-
-      await tx.auditTrail.create({
-        data: {
-          userId: user.id,
-          action: "ACCESS_REQUEST_APPROVED",
-          resource: "AccessRequest",
-          resourceId: accessReq.id,
-          detailsJson: {
-            email: accessReq.email,
-            generatedInviteCode: autoCode,
-          },
-        },
-      });
-
-      return { inviteCode: code, updatedRequest: updated };
-    });
 
     return NextResponse.json({
-      message: "Request approved and single-use onboarding code generated",
-      inviteCode: inviteCode.code,
-      request: updatedRequest,
+      message: action === "APPROVE" ? "Member access approved" : "Request rejected",
+      request: outcome.request,
+      inviteCode: outcome.inviteCode,
     });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || "Failed to review access request" },
+      { error: error.message || "Failed to process access request" },
       { status: 500 }
     );
   }

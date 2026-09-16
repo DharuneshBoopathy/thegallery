@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { signAuthToken, setAuthCookie } from "@/lib/auth";
-import bcrypt from "bcryptjs";
+import { signAuthToken, setAuthCookie, isSuperAdminEmail } from "@/lib/auth";
+import {
+  validateAndConsumeInviteCode,
+  createVaultUser,
+  findVaultUserByEmail,
+} from "@/lib/vaultData";
 import { z } from "zod";
 
 const registerSchema = z.object({
   inviteCode: z.string().trim().min(3, "Invite code is required"),
-  email: z.string().email("Invalid email address").toLowerCase(),
+  email: z.string().email("Invalid email address").toLowerCase().trim(),
   fullName: z.string().trim().min(2, "Name must be at least 2 characters"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 export async function POST(req: Request) {
@@ -25,71 +28,43 @@ export async function POST(req: Request) {
 
     const { inviteCode, email, fullName, password } = result.data;
 
-    // 1. Validate Invite Code inside a transaction
-    const user = await db.$transaction(async (tx) => {
-      const codeRecord = await tx.inviteCode.findUnique({
-        where: { code: inviteCode },
-      });
+    // 1. Check if user already exists
+    const existing = await findVaultUserByEmail(email);
+    if (existing && existing.passwordHash) {
+      return NextResponse.json(
+        { error: "An account with this email address already exists. Please log in." },
+        { status: 400 }
+      );
+    }
 
-      if (!codeRecord) {
-        throw new Error("INVALID_CODE: Invite code does not exist.");
+    // 2. Validate & consume invite key (or bypass if super admin)
+    const isSuper = isSuperAdminEmail(email);
+    let assignedRole: "SUPER_ADMIN" | "ADMIN" | "MEMBER" | "CONTRIBUTOR" | "VIEWER" = isSuper
+      ? "SUPER_ADMIN"
+      : "MEMBER";
+
+    if (!isSuper) {
+      const inviteValidation = validateAndConsumeInviteCode(inviteCode);
+      if (!inviteValidation.valid) {
+        return NextResponse.json(
+          { error: inviteValidation.error || "Invalid or depleted invitation code" },
+          { status: 400 }
+        );
       }
-
-      if (codeRecord.expiresAt && codeRecord.expiresAt < new Date()) {
-        throw new Error("EXPIRED_CODE: This invite code has expired.");
+      if (inviteValidation.role) {
+        assignedRole = inviteValidation.role;
       }
+    }
 
-      if (codeRecord.usesCount >= codeRecord.maxUses) {
-        throw new Error("DEPLETED_CODE: This invite code has reached its maximum uses.");
-      }
-
-      // 2. Check if user already exists
-      const existingUser = await tx.user.findUnique({
-        where: { email },
-      });
-
-      if (existingUser) {
-        throw new Error("EMAIL_EXISTS: An account with this email already exists.");
-      }
-
-      // 3. Hash password and create user
-      const passwordHash = await bcrypt.hash(password, 12);
-      const newUser = await tx.user.create({
-        data: {
-          email,
-          fullName,
-          passwordHash,
-          role: codeRecord.role,
-          invitedById: codeRecord.createdById,
-        },
-      });
-
-      // 4. Increment invite code usage counter
-      await tx.inviteCode.update({
-        where: { id: codeRecord.id },
-        data: {
-          usesCount: { increment: 1 },
-        },
-      });
-
-      // 5. Create audit entry
-      await tx.auditTrail.create({
-        data: {
-          userId: newUser.id,
-          action: "USER_REGISTERED",
-          resource: "User",
-          resourceId: newUser.id,
-          detailsJson: {
-            inviteCodeUsed: inviteCode,
-            assignedRole: codeRecord.role,
-          },
-        },
-      });
-
-      return newUser;
+    // 3. Create user in vault store
+    const user = await createVaultUser({
+      email,
+      fullName,
+      password,
+      role: assignedRole,
     });
 
-    // 6. Generate Session Token and set cookie
+    // 4. Generate Session Token and set cookie
     const token = signAuthToken({
       id: user.id,
       email: user.email,
@@ -100,24 +75,20 @@ export async function POST(req: Request) {
 
     await setAuthCookie(token);
 
-    return NextResponse.json(
-      {
-        message: "Registration successful",
-        user: {
-          id: user.id,
-          email: user.email,
-          fullName: user.fullName,
-          role: user.role,
-        },
+    return NextResponse.json({
+      message: "Registration successful. Welcome to The Gallery vault.",
+      user: {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
       },
-      { status: 201 }
-    );
+    });
   } catch (error: any) {
-    const message = error.message || "Registration failed";
-    const status = message.includes("INVALID_CODE") || message.includes("EXPIRED_CODE") || message.includes("DEPLETED_CODE") || message.includes("EMAIL_EXISTS")
-      ? 400
-      : 500;
-
-    return NextResponse.json({ error: message }, { status });
+    console.error("Registration error:", error);
+    return NextResponse.json(
+      { error: error.message || "An unexpected error occurred during registration" },
+      { status: 500 }
+    );
   }
 }
