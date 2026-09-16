@@ -48,7 +48,7 @@ export async function GET(req: Request) {
         {
           id: "00000000-0000-0000-0000-000000000001",
           fullName: "Chief Archivist",
-          email: "admin@autisticjourney.local",
+          email: "admin@thegallery.local",
           role: "SUPER_ADMIN",
           status: "ACTIVE",
           gender: "PREFER_NOT_TO_SAY",

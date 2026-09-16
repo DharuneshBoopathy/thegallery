@@ -5,7 +5,7 @@ const endpoint = process.env.STORAGE_ENDPOINT;
 const region = process.env.STORAGE_REGION || "auto";
 const accessKeyId = process.env.STORAGE_ACCESS_KEY_ID || "";
 const secretAccessKey = process.env.STORAGE_SECRET_ACCESS_KEY || "";
-export const BUCKET_NAME = process.env.STORAGE_BUCKET_NAME || "autistic-journey-archive";
+export const BUCKET_NAME = process.env.STORAGE_BUCKET_NAME || "thegallery-storage-vault";
 export const PUBLIC_STORAGE_URL = process.env.STORAGE_PUBLIC_URL || "";
 
 export const s3Client = new S3Client({

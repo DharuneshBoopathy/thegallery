@@ -91,7 +91,7 @@ export default function MacOSDock({ isAdmin, onOpenApp }: DockProps) {
               onMouseLeave={() => setHoveredIndex(null)}
             >
               {/* Tooltip Label */}
-              <div className="pointer-events-none absolute -top-9 z-50 whitespace-nowrap rounded-lg border border-white/10 bg-[#16161a]/95 px-2.5 py-1 text-[11px] font-medium text-white shadow-xl backdrop-blur-md opacity-0 transition-all duration-150 group-hover:opacity-100 group-hover:-top-10">
+              <div className="pointer-events-none absolute -top-9 z-50 whitespace-nowrap rounded-lg border border-slate-200 bg-white/95 px-2.5 py-1 text-[11px] font-medium text-slate-800 shadow-md backdrop-blur-md opacity-0 transition-all duration-150 group-hover:opacity-100 group-hover:-top-10">
                 {item.name}
               </div>
 
@@ -105,13 +105,14 @@ export default function MacOSDock({ isAdmin, onOpenApp }: DockProps) {
               </Link>
 
               {/* Running App Dot Indicator */}
-              <div className="mt-1 h-1 w-1 rounded-full bg-white transition-opacity">
+              <div className="mt-1 h-1 w-1 rounded-full bg-slate-800 transition-opacity">
                 {isActive ? (
-                  <div className="h-1 w-1 rounded-full bg-white shadow-sm shadow-white" />
+                  <div className="h-1 w-1 rounded-full bg-slate-900 shadow-xs" />
                 ) : (
                   <div className="h-1 w-1 opacity-0" />
                 )}
               </div>
+
             </div>
           );
         })}

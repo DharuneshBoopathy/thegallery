@@ -33,10 +33,10 @@ export async function POST(req: Request) {
     }
 
     // Dev / Standalone fallback for seeded master super admin
-    if (!user && email === "admin@autisticjourney.local" && password === "AdminMaster2026!") {
+    if (!user && (email === "admin@thegallery.local" || email === "admin@autisticjourney.local") && password === "AdminMaster2026!") {
       const devAdmin = {
         id: "00000000-0000-0000-0000-000000000001",
-        email: "admin@autisticjourney.local",
+        email: "admin@thegallery.local",
         fullName: "Chief Archivist (Master Admin)",
         role: "SUPER_ADMIN" as const,
         status: "ACTIVE" as const,

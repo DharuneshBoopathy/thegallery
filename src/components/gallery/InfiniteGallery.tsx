@@ -73,27 +73,27 @@ export default function InfiniteGallery() {
       {/* Search and Discovery Bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search memories by keyword, event, location, camera..."
+            placeholder="Search memories by keyword, tags, camera..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-10 pr-4 text-xs text-white placeholder-zinc-500 focus:border-white/30 focus:outline-none transition backdrop-blur-md"
+            className="w-full rounded-xl border border-slate-200 bg-white py-2 pl-10 pr-4 text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:outline-none transition shadow-xs"
           />
         </div>
 
         {/* Timeline Navigator Year Pills */}
         <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <Clock className="mr-1 h-3.5 w-3.5 text-zinc-400 shrink-0" />
+          <Clock className="mr-1 h-3.5 w-3.5 text-slate-400 shrink-0" />
           {timelineYears.map((yr) => (
             <button
               key={yr}
               onClick={() => setActiveYear(yr)}
               className={`rounded-lg px-2.5 py-1 text-[11px] font-mono transition ${
                 activeYear === yr
-                  ? "bg-white text-black font-bold shadow-sm"
-                  : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 border border-white/5"
+                  ? "bg-slate-900 text-white font-bold shadow-xs"
+                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 shadow-2xs"
               }`}
             >
               {yr === "ALL" ? "All Time" : yr}
@@ -103,7 +103,7 @@ export default function InfiniteGallery() {
       </div>
 
       {/* Category and Type Filter Pills */}
-      <div className="flex items-center justify-between border-b border-white/10 pb-3">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-3">
         <div className="flex space-x-1.5">
           {(["all", "photos", "videos"] as const).map((type) => (
             <button
@@ -111,8 +111,8 @@ export default function InfiniteGallery() {
               onClick={() => setActiveType(type)}
               className={`rounded-lg px-3 py-1 text-xs font-medium uppercase tracking-wider transition ${
                 activeType === type
-                  ? "bg-white text-black font-semibold shadow-sm"
-                  : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10 border border-white/5"
+                  ? "bg-slate-900 text-white font-semibold shadow-xs"
+                  : "bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 shadow-2xs"
               }`}
             >
               {type}
@@ -120,27 +120,27 @@ export default function InfiniteGallery() {
           ))}
         </div>
 
-        <span className="text-xs text-zinc-500 font-mono">
+        <span className="text-xs text-slate-500 font-mono">
           {items.length} {items.length === 1 ? "memory" : "memories"}
         </span>
       </div>
 
-      {/* Masonry / Grid Container */}
+      {/* Grid Container */}
       {loading ? (
-        <div className="py-20 text-center text-xs text-zinc-500">
-          Decrypting and assembling archive feed...
+        <div className="py-20 text-center text-xs text-slate-500">
+          Loading archive feed...
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-2xl liquid-glass-card p-12 text-center text-xs text-zinc-400">
-          No media matches the selected view. Upload photos or videos to begin.
+        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-xs text-slate-500 shadow-xs">
+          No media found. Deposit photos or videos to begin building the archive.
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {items.map((item, idx) => (
             <div
               key={item.id}
               onClick={() => setLightboxIndex(idx)}
-              className="group relative aspect-square cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-zinc-950 transition duration-200 hover:border-white/30 hover:shadow-xl shadow-sm"
+              className="group relative aspect-square cursor-pointer overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 transition duration-200 hover:border-slate-400 hover:shadow-lg shadow-xs"
             >
               {/* Thumbnail Image */}
               <img
@@ -153,17 +153,17 @@ export default function InfiniteGallery() {
 
               {/* Video Indicator Overlay */}
               {item.isVideo && (
-                <div className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-white backdrop-blur-md border border-white/10">
+                <div className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md border border-white/20">
                   <Film className="h-3.5 w-3.5 text-white" />
                 </div>
               )}
 
-              {/* Hover Dark Vignette & Metadata */}
-              <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/90 via-black/30 to-transparent p-3 opacity-0 transition duration-200 group-hover:opacity-100">
+              {/* Hover Vignette & Metadata */}
+              <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 opacity-0 transition duration-200 group-hover:opacity-100">
                 <p className="truncate text-xs font-semibold text-white">
                   {item.originalFilename}
                 </p>
-                <div className="mt-1 flex items-center justify-between text-[10px] text-zinc-300">
+                <div className="mt-1 flex items-center justify-between text-[10px] text-slate-200">
                   <span>{item.captureYear || "Archive"}</span>
                   <span className="flex items-center text-white font-medium">
                     <Eye className="mr-1 h-3 w-3" /> View
@@ -181,7 +181,7 @@ export default function InfiniteGallery() {
           <button
             onClick={loadMore}
             disabled={loadingMore}
-            className="inline-flex items-center rounded-xl border border-white/15 bg-white/5 px-5 py-2 text-xs font-medium text-white hover:bg-white/10 disabled:opacity-50 transition shadow-sm"
+            className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-5 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition shadow-xs"
           >
             {loadingMore ? (
               <>

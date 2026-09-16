@@ -13,9 +13,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Autistic Journey — macOS Tahoe 26 Digital Archive",
-  description: "Private, invitation-controlled digital photo and video archive with native macOS Tahoe 26 aesthetics and zero-trust security.",
+  title: "The Gallery — Private Digital Archive",
+  description: "Private, invitation-controlled digital photo and video archive with zero-trust security.",
 };
+
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

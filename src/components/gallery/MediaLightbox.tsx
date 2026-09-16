@@ -164,16 +164,16 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
   return (
     <div
       onContextMenu={handleContextMenu}
-      className="fixed inset-0 z-50 flex flex-col bg-black/95 text-white backdrop-blur-xl select-none"
+      className="fixed inset-0 z-50 flex flex-col bg-slate-950/60 text-slate-900 backdrop-blur-xl select-none"
     >
       {/* Top Controls Bar */}
-      <div className="flex h-14 items-center justify-between px-4 sm:px-6 border-b border-white/10 bg-black/40">
+      <div className="flex h-14 items-center justify-between px-4 sm:px-6 border-b border-slate-200/80 bg-white/95 shadow-xs">
         <div className="flex items-center space-x-3">
-          <span className="text-xs font-mono text-slate-400">
+          <span className="text-xs font-mono text-slate-500">
             {currentIndex + 1} / {items.length}
           </span>
-          <span className="h-3 w-px bg-white/20" />
-          <p className="truncate text-xs font-medium text-slate-200 max-w-[150px] sm:max-w-sm">
+          <span className="h-3 w-px bg-slate-200" />
+          <p className="truncate text-xs font-medium text-slate-800 max-w-[150px] sm:max-w-sm">
             {current.originalFilename}
           </p>
         </div>
@@ -187,8 +187,8 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
               }}
               className={`flex items-center rounded-xl px-3 py-1.5 text-xs font-medium transition ${
                 showTagModal
-                  ? "bg-white text-black font-semibold shadow-sm"
-                  : "bg-white/10 text-zinc-200 hover:bg-white/20 border border-white/10"
+                  ? "bg-slate-900 text-white font-semibold shadow-xs"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
               }`}
             >
               <User className="mr-1.5 h-3.5 w-3.5" />
@@ -196,12 +196,12 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
             </button>
           )}
 
-          <div className="hidden sm:flex items-center text-[11px] text-zinc-300">
-            <ShieldCheck className="mr-1 h-3.5 w-3.5 text-white" /> Vault Protected
+          <div className="hidden sm:flex items-center text-[11px] text-slate-500">
+            <ShieldCheck className="mr-1 h-3.5 w-3.5 text-emerald-600" /> Protected Archive
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-zinc-400 hover:bg-white/10 hover:text-white transition"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition"
           >
             <X className="h-5 w-5" />
           </button>
@@ -219,13 +219,13 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
           <>
             <button
               onClick={handlePrev}
-              className="absolute left-2 sm:left-4 z-20 rounded-full bg-white/10 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-white/20 transition border border-white/10"
+              className="absolute left-2 sm:left-4 z-20 rounded-full bg-white/90 p-2.5 sm:p-3 text-slate-800 backdrop-blur-md hover:bg-white transition border border-slate-200 shadow-md"
             >
               <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
             <button
               onClick={handleNext}
-              className="absolute right-2 sm:right-4 z-20 rounded-full bg-white/10 p-2.5 sm:p-3 text-white backdrop-blur-md hover:bg-white/20 transition border border-white/10"
+              className="absolute right-2 sm:right-4 z-20 rounded-full bg-white/90 p-2.5 sm:p-3 text-slate-800 backdrop-blur-md hover:bg-white transition border border-slate-200 shadow-md"
             >
               <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
@@ -244,18 +244,18 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
                 onPause={() => setIsPlaying(false)}
                 controlsList="nodownload noplaybackrate"
                 disablePictureInPicture
-                className="max-h-[75vh] max-w-[90vw] rounded-2xl shadow-2xl object-contain border border-white/10"
+                className="max-h-[75vh] max-w-[90vw] rounded-2xl shadow-2xl object-contain border border-slate-200/40"
               />
               {/* Custom Player Toolbar */}
-              <div className="mt-3 flex items-center space-x-3 rounded-full bg-black/70 px-4 py-1.5 backdrop-blur-md border border-white/15">
-                <button onClick={togglePlay} className="p-1 text-white hover:opacity-80">
+              <div className="mt-3 flex items-center space-x-3 rounded-full bg-white/95 px-4 py-1.5 backdrop-blur-md border border-slate-200 shadow-md">
+                <button onClick={togglePlay} className="p-1 text-slate-800 hover:opacity-80">
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </button>
-                <button onClick={toggleMute} className="p-1 text-white hover:opacity-80">
+                <button onClick={toggleMute} className="p-1 text-slate-800 hover:opacity-80">
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
                 {current.durationSeconds && (
-                  <span className="text-[10px] font-mono text-zinc-300">
+                  <span className="text-[10px] font-mono text-slate-500">
                     {Math.round(current.durationSeconds)}s
                   </span>
                 )}
@@ -264,7 +264,7 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
               {/* Dynamic Forensic Watermark Overlay */}
               <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 opacity-20 select-none">
                 <div className="flex justify-between text-[11px] font-mono text-white/70">
-                  <span>AUTISTIC JOURNEY ARCHIVE</span>
+                  <span>THE GALLERY ARCHIVE</span>
                   <span>{new Date().toISOString().split("T")[0]}</span>
                 </div>
                 <div className="self-center transform -rotate-12 text-sm font-mono tracking-widest text-white/50">
@@ -272,9 +272,10 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
                 </div>
                 <div className="flex justify-between text-[10px] font-mono text-white/50">
                   <span>DO NOT DISTRIBUTE</span>
-                  <span>AJ-SEC-FORENSIC</span>
+                  <span>TG-SEC-VAULT</span>
                 </div>
               </div>
+
             </div>
           ) : (
             <div
@@ -319,17 +320,18 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
               {/* Dynamic Forensic Watermark Overlay */}
               <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 opacity-25 select-none">
                 <div className="flex justify-between text-[11px] font-mono text-white/70">
-                  <span>AUTISTIC JOURNEY ARCHIVE</span>
+                  <span>THE GALLERY ARCHIVE</span>
                   <span>{new Date().toISOString().split("T")[0]}</span>
                 </div>
                 <div className="self-center transform -rotate-12 text-sm font-mono tracking-widest text-white/50">
-                  CONFIDENTIAL • BATCH VAULT
+                  CONFIDENTIAL • COMMUNITY VAULT
                 </div>
                 <div className="flex justify-between text-[10px] font-mono text-white/50">
                   <span>DO NOT DISTRIBUTE</span>
-                  <span>AJ-SEC-FORENSIC</span>
+                  <span>TG-SEC-VAULT</span>
                 </div>
               </div>
+
             </div>
           )}
         </div>
@@ -337,25 +339,25 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
 
       {/* Person Tagging Creator Modal Bar */}
       {showTagModal && (
-        <div className="border-t border-white/10 bg-black/80 px-4 py-3 backdrop-blur-xl">
+        <div className="border-t border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur-xl">
           <div className="mx-auto flex max-w-xl items-center space-x-3">
-            <span className="text-xs text-zinc-300 shrink-0 font-medium">
+            <span className="text-xs text-slate-600 shrink-0 font-medium">
               {tagBox ? "Coordinates Set:" : "Click face on photo to pin:"}
             </span>
             <input
               type="text"
-              placeholder="Batchmate name..."
+              placeholder="Person's name..."
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSaveTag();
               }}
-              className="flex-1 rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:border-white/40 focus:outline-none transition"
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 focus:border-slate-400 focus:bg-white focus:outline-none transition"
             />
             <button
               onClick={handleSaveTag}
               disabled={tagLoading || !tagInput.trim()}
-              className="rounded-xl bg-white px-4 py-1.5 text-xs font-semibold text-black hover:bg-zinc-200 transition disabled:opacity-50"
+              className="rounded-xl bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 transition disabled:opacity-50 shadow-xs"
             >
               {tagLoading ? "Saving..." : "Pin Tag"}
             </button>
@@ -364,7 +366,7 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
                 setShowTagModal(false);
                 setTagBox(null);
               }}
-              className="rounded-xl bg-white/10 px-3 py-1.5 text-xs text-zinc-300 hover:text-white transition"
+              className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-200 transition"
             >
               Cancel
             </button>
@@ -373,12 +375,12 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
       )}
 
       {/* Bottom Metadata Drawer */}
-      <div className="border-t border-white/10 bg-black/60 px-4 sm:px-6 py-3 text-xs text-zinc-300 backdrop-blur-xl">
+      <div className="border-t border-slate-200/80 bg-white/95 px-4 sm:px-6 py-3 text-xs text-slate-600 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex flex-wrap items-center gap-x-4 sm:gap-x-6 gap-y-1 text-[11px] sm:text-xs">
             {current.capturedAt && (
-              <span className="flex items-center text-zinc-400">
-                <Calendar className="mr-1.5 h-3.5 w-3.5 text-white" />
+              <span className="flex items-center text-slate-500">
+                <Calendar className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
                 {new Date(current.capturedAt).toLocaleDateString(undefined, {
                   year: "numeric",
                   month: "short",
@@ -388,15 +390,15 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
             )}
 
             {(current.deviceMake || current.deviceModel) && (
-              <span className="flex items-center text-zinc-400">
-                <Camera className="mr-1.5 h-3.5 w-3.5 text-white" />
+              <span className="flex items-center text-slate-500">
+                <Camera className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
                 {[current.deviceMake, current.deviceModel].filter(Boolean).join(" ")}
               </span>
             )}
 
             {current.uploader && (
-              <span className="flex items-center text-zinc-400">
-                <User className="mr-1.5 h-3.5 w-3.5 text-white" />
+              <span className="flex items-center text-slate-500">
+                <User className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
                 Deposited by {current.uploader.fullName}
               </span>
             )}
@@ -407,7 +409,7 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
             {currentPersonTags.map((pt) => (
               <span
                 key={pt.id}
-                className="rounded-full bg-white/10 border border-white/15 px-2.5 py-0.5 text-[10px] text-white flex items-center"
+                className="rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-[10px] text-slate-700 flex items-center font-medium"
               >
                 <User className="mr-1 h-2.5 w-2.5" />
                 {pt.name}
@@ -416,7 +418,7 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
             {current.tags && current.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-zinc-300"
+                className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600 border border-slate-200"
               >
                 #{tag}
               </span>

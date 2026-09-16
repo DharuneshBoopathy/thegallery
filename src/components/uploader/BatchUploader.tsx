@@ -132,27 +132,27 @@ export default function BatchUploader() {
   };
 
   return (
-    <div className="w-full space-y-6">
-      {/* Visibility Governance Card (PRD Section 9) */}
-      <div className="rounded-2xl border border-white/10 bg-[#141416]/90 p-5 space-y-4 backdrop-blur-xl">
+    <div className="w-full space-y-6 text-slate-900">
+      {/* Visibility Governance Card */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4 shadow-xs">
         <div className="flex items-center space-x-2">
-          <Shield className="h-4 w-4 text-white" />
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+          <Shield className="h-4 w-4 text-slate-700" />
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
             Access & Visibility Policy
           </h4>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
               Visibility Scope
             </label>
             <select
               value={visibilityMode}
               onChange={(e) => setVisibilityMode(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-white/15 bg-black/60 px-3 py-2 text-xs text-white focus:border-white focus:outline-none"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none transition shadow-2xs"
             >
-              <option value="PUBLIC_BATCH">Public (All Verified Batch Members)</option>
+              <option value="PUBLIC_BATCH">Public (All Verified Members)</option>
               <option value="GROUP_ONLY">Circle / Group Only</option>
               <option value="GENDER_RESTRICTED">Gender Restricted</option>
               <option value="GROUP_AND_GENDER">Circle AND Gender Restricted</option>
@@ -162,13 +162,13 @@ export default function BatchUploader() {
 
           {(visibilityMode === "GENDER_RESTRICTED" || visibilityMode === "GROUP_AND_GENDER") && (
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Allowed Gender
               </label>
               <select
                 value={allowedGender}
                 onChange={(e) => setAllowedGender(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-white/15 bg-black/60 px-3 py-2 text-xs text-white focus:border-white focus:outline-none"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none transition shadow-2xs"
               >
                 <option value="FEMALE">Female Only</option>
                 <option value="MALE">Male Only</option>
@@ -180,13 +180,13 @@ export default function BatchUploader() {
 
           {(visibilityMode === "GROUP_ONLY" || visibilityMode === "GROUP_AND_GENDER") && (
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
+              <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 Assigned Circle
               </label>
               <select
                 value={selectedGroupId}
                 onChange={(e) => setSelectedGroupId(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-white/15 bg-black/60 px-3 py-2 text-xs text-white focus:border-white focus:outline-none"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-900 focus:border-slate-400 focus:bg-white focus:outline-none transition shadow-2xs"
               >
                 <option value="">Select a Circle...</option>
                 {userCircles.map((c) => (
@@ -213,10 +213,10 @@ export default function BatchUploader() {
           handleFiles(e.dataTransfer.files);
         }}
         onClick={() => fileInputRef.current?.click()}
-        className={`cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 backdrop-blur-xl ${
+        className={`cursor-pointer rounded-2xl border-2 border-dashed p-10 text-center transition-all duration-200 ${
           dragOver
-            ? "border-white bg-white/10"
-            : "border-white/15 bg-[#141416]/60 hover:border-white/40 hover:bg-[#141416]/90"
+            ? "border-slate-800 bg-slate-100"
+            : "border-slate-300 bg-slate-50/70 hover:border-slate-400 hover:bg-slate-100/60"
         }`}
       >
         <input
@@ -227,30 +227,30 @@ export default function BatchUploader() {
           accept="image/*,video/*"
           className="hidden"
         />
-        <UploadCloud className="mx-auto h-12 w-12 text-white opacity-80" />
-        <h3 className="mt-4 text-base font-semibold text-white">Drop archive media here, or browse files</h3>
-        <p className="mt-1 text-xs text-zinc-400">
+        <UploadCloud className="mx-auto h-12 w-12 text-slate-600" />
+        <h3 className="mt-4 text-base font-semibold text-slate-900">Drop archive media here, or browse files</h3>
+        <p className="mt-1 text-xs text-slate-500">
           Accepts high-resolution JPG, PNG, HEIC, MP4, MOV. Direct to archival storage.
         </p>
       </div>
 
       {/* Queue Listing */}
       {items.length > 0 && (
-        <div className="space-y-4 rounded-2xl border border-white/10 bg-[#141416]/90 p-5 backdrop-blur-xl">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h4 className="text-sm font-semibold tracking-wide text-white">
+        <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h4 className="text-sm font-semibold tracking-wide text-slate-900">
               Upload Queue ({items.length} {items.length === 1 ? "file" : "files"})
             </h4>
             <div className="flex gap-2">
               <button
                 onClick={() => setItems([])}
-                className="rounded-xl px-3 py-1.5 text-xs text-zinc-400 hover:text-white transition"
+                className="rounded-xl px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800 transition"
               >
                 Clear All
               </button>
               <button
                 onClick={uploadAll}
-                className="rounded-xl bg-white px-4 py-1.5 text-xs font-semibold text-black shadow hover:bg-zinc-200 transition"
+                className="rounded-xl bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-slate-800 transition"
               >
                 Upload All
               </button>
@@ -263,15 +263,15 @@ export default function BatchUploader() {
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between rounded-xl border border-white/10 bg-black/60 p-3"
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3"
                 >
                   <div className="flex items-center space-x-3 overflow-hidden">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white border border-slate-200 text-slate-700">
                       {isVideo ? <Film className="h-5 w-5" /> : <ImageIcon className="h-5 w-5" />}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-medium text-white">{item.file.name}</p>
-                      <p className="text-[10px] text-zinc-400">{formatBytes(item.file.size)}</p>
+                      <p className="truncate text-xs font-medium text-slate-900">{item.file.name}</p>
+                      <p className="text-[10px] text-slate-500">{formatBytes(item.file.size)}</p>
                     </div>
                   </div>
 
@@ -279,33 +279,33 @@ export default function BatchUploader() {
                     {/* Status Display */}
                     {item.status === "uploading" && (
                       <div className="w-24">
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                           <div
-                            className="h-full bg-white transition-all duration-150"
+                            className="h-full bg-slate-900 transition-all duration-150"
                             style={{ width: `${item.progress}%` }}
                           />
                         </div>
-                        <span className="text-[10px] text-zinc-400">{item.progress}%</span>
+                        <span className="text-[10px] text-slate-500">{item.progress}%</span>
                       </div>
                     )}
 
                     {item.status === "presigning" && (
-                      <span className="text-[11px] text-zinc-300">Presigning...</span>
+                      <span className="text-[11px] text-slate-500">Presigning...</span>
                     )}
 
                     {item.status === "confirming" && (
-                      <span className="text-[11px] text-zinc-300">Indexing...</span>
+                      <span className="text-[11px] text-slate-500">Indexing...</span>
                     )}
 
                     {item.status === "done" && (
-                      <span className="flex items-center text-[11px] font-medium text-white">
+                      <span className="flex items-center text-[11px] font-medium text-emerald-600">
                         <CheckCircle className="mr-1 h-3.5 w-3.5" /> Ready
                       </span>
                     )}
 
                     {item.status === "error" && (
                       <span
-                        className="flex items-center text-[11px] font-medium text-red-400"
+                        className="flex items-center text-[11px] font-medium text-red-600"
                         title={item.error}
                       >
                         <AlertCircle className="mr-1 h-3.5 w-3.5" /> Failed
@@ -315,7 +315,7 @@ export default function BatchUploader() {
                     {item.status === "idle" && (
                       <button
                         onClick={() => uploadSingle(item)}
-                        className="rounded-lg bg-white px-2.5 py-1 text-[11px] font-semibold text-black hover:bg-zinc-200 transition"
+                        className="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-slate-800 transition"
                       >
                         Upload
                       </button>
@@ -324,7 +324,7 @@ export default function BatchUploader() {
                     {item.status === "error" && (
                       <button
                         onClick={() => uploadSingle(item)}
-                        className="rounded p-1 text-zinc-400 hover:text-white transition"
+                        className="rounded p-1 text-slate-500 hover:text-slate-800 transition"
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
                       </button>
@@ -332,9 +332,9 @@ export default function BatchUploader() {
 
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="rounded p-1 text-zinc-500 hover:text-red-400 transition"
+                      className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

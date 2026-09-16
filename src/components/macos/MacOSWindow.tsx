@@ -13,9 +13,6 @@ import {
   UploadCloud,
   Shield,
   KeyRound,
-  Trash2,
-  Calendar,
-  Sparkles,
   Maximize2,
   Minimize2,
 } from "lucide-react";
@@ -30,7 +27,7 @@ interface MacOSWindowProps {
 
 export default function MacOSWindow({
   title,
-  subtitle = "Autistic Journey",
+  subtitle = "The Gallery",
   children,
   user,
 }: MacOSWindowProps) {
@@ -46,7 +43,7 @@ export default function MacOSWindow({
       <div className="fixed bottom-24 right-8 z-30 animate-bounce">
         <button
           onClick={() => setIsMinimized(false)}
-          className="flex items-center space-x-2 rounded-xl border border-white/20 bg-black/60 px-4 py-2 text-xs font-semibold text-white shadow-2xl backdrop-blur-xl hover:bg-black/80"
+          className="flex items-center space-x-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-900 shadow-xl hover:bg-slate-50 transition"
         >
           <PhotosAppIcon className="h-5 w-5" />
           <span>Restore {title}</span>
@@ -59,17 +56,17 @@ export default function MacOSWindow({
     <div
       className={`mx-auto flex flex-col transition-all duration-300 select-none ${
         isFullscreen
-          ? "fixed inset-0 top-7 z-30 rounded-none border-none"
-          : "relative z-20 w-full max-w-7xl rounded-2xl border border-white/20 shadow-[0_30px_90px_rgba(0,0,0,0.7)]"
-      } overflow-hidden bg-[#0d1017]/90 backdrop-blur-3xl text-white`}
+          ? "fixed inset-0 top-10 z-30 rounded-none border-none"
+          : "relative z-20 w-full max-w-7xl rounded-2xl border border-slate-200 shadow-[0_20px_50px_rgba(0,0,0,0.06)]"
+      } overflow-hidden bg-white text-slate-900`}
     >
-      {/* macOS Window Titlebar & Toolbar */}
-      <div className="flex h-13 items-center justify-between px-4 border-b border-white/10 bg-gradient-to-b from-white/10 to-transparent">
+      {/* Window Titlebar & Toolbar */}
+      <div className="flex h-12 items-center justify-between px-4 border-b border-slate-200 bg-slate-50/80">
         {/* Left: Traffic Lights & Navigation */}
         <div className="flex items-center space-x-4">
           {/* Traffic Lights */}
           <div className="flex items-center space-x-2 group">
-            {/* Close 🔴 */}
+            {/* Close */}
             <button
               onClick={() => window.history.back()}
               title="Close"
@@ -79,7 +76,7 @@ export default function MacOSWindow({
                 ×
               </span>
             </button>
-            {/* Minimize 🟡 */}
+            {/* Minimize */}
             <button
               onClick={() => setIsMinimized(true)}
               title="Minimize"
@@ -89,7 +86,7 @@ export default function MacOSWindow({
                 -
               </span>
             </button>
-            {/* Fullscreen / Maximize 🟢 */}
+            {/* Fullscreen */}
             <button
               onClick={() => setIsFullscreen(!isFullscreen)}
               title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
@@ -105,7 +102,7 @@ export default function MacOSWindow({
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             title="Toggle Sidebar"
-            className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white transition"
+            className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
           >
             <Sidebar className="h-4 w-4" />
           </button>
@@ -114,13 +111,13 @@ export default function MacOSWindow({
           <div className="hidden sm:flex items-center space-x-0.5">
             <button
               onClick={() => window.history.back()}
-              className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white transition"
+              className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
               onClick={() => window.history.forward()}
-              className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white transition"
+              className="rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -128,186 +125,140 @@ export default function MacOSWindow({
         </div>
 
         {/* Center: Segmented Navigation Control */}
-        <div className="flex items-center rounded-lg border border-white/10 bg-black/40 p-0.5 text-xs font-medium text-slate-300">
+        <div className="flex items-center rounded-lg border border-slate-200 bg-slate-100 p-0.5 text-xs font-medium text-slate-600">
           <Link
             href="/archive"
-            className={`flex items-center rounded-md px-3 py-1 transition ${
+            className={`rounded-md px-3 py-1 transition ${
               pathname === "/archive"
-                ? "bg-white/20 text-white shadow-sm font-semibold"
-                : "hover:text-white"
+                ? "bg-white text-slate-900 font-semibold shadow-xs"
+                : "hover:text-slate-900"
             }`}
           >
-            <Image className="mr-1.5 h-3.5 w-3.5 text-indigo-400" />
-            <span>Library</span>
+            Memories
           </Link>
           <Link
             href="/groups"
-            className={`flex items-center rounded-md px-3 py-1 transition ${
+            className={`rounded-md px-3 py-1 transition ${
               pathname === "/groups"
-                ? "bg-white/20 text-white shadow-sm font-semibold"
-                : "hover:text-white"
+                ? "bg-white text-slate-900 font-semibold shadow-xs"
+                : "hover:text-slate-900"
             }`}
           >
-            <Users className="mr-1.5 h-3.5 w-3.5 text-emerald-400" />
-            <span>Circles</span>
+            Circles
           </Link>
           <Link
             href="/upload"
-            className={`flex items-center rounded-md px-3 py-1 transition ${
+            className={`rounded-md px-3 py-1 transition ${
               pathname === "/upload"
-                ? "bg-white/20 text-white shadow-sm font-semibold"
-                : "hover:text-white"
+                ? "bg-white text-slate-900 font-semibold shadow-xs"
+                : "hover:text-slate-900"
             }`}
           >
-            <UploadCloud className="mr-1.5 h-3.5 w-3.5 text-yellow-400" />
-            <span>Deposit</span>
+            Deposit
           </Link>
-          {isAdmin && (
-            <Link
-              href="/admin"
-              className={`flex items-center rounded-md px-3 py-1 transition ${
-                pathname === "/admin"
-                  ? "bg-white/20 text-white shadow-sm font-semibold"
-                  : "hover:text-white"
-              }`}
-            >
-              <Shield className="mr-1.5 h-3.5 w-3.5 text-purple-400" />
-              <span>Admin</span>
-            </Link>
-          )}
         </div>
 
-        {/* Right: Window Title / Mode */}
-        <div className="flex items-center space-x-2">
-          <span className="hidden sm:inline text-xs font-medium text-slate-300">
-            {title}
-          </span>
+        {/* Right: Actions and Fullscreen */}
+        <div className="flex items-center space-x-2 text-slate-500 text-xs">
+          <div className="hidden md:flex flex-col text-right">
+            <span className="font-semibold text-slate-800 text-[11px] leading-tight">{title}</span>
+            <span className="text-[10px] text-slate-400 font-mono leading-tight">{subtitle}</span>
+          </div>
+
           <button
             onClick={() => setIsFullscreen(!isFullscreen)}
-            className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white"
+            className="rounded p-1 hover:bg-slate-200 hover:text-slate-800 transition"
           >
-            {isFullscreen ? (
-              <Minimize2 className="h-3.5 w-3.5" />
-            ) : (
-              <Maximize2 className="h-3.5 w-3.5" />
-            )}
+            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
           </button>
         </div>
       </div>
 
-      {/* Main Body Split: Sidebar + Content */}
-      <div className="flex flex-1 min-h-[600px] overflow-hidden">
-        {/* macOS Native Sidebar */}
+      {/* Window Body */}
+      <div className="flex flex-1 overflow-hidden min-h-[580px]">
+        {/* Sidebar */}
         {sidebarOpen && (
-          <aside className="w-56 shrink-0 border-r border-white/10 bg-black/30 p-3 space-y-4 text-xs select-none">
-            {/* Library Section */}
-            <div>
-              <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                Library
-              </div>
-              <nav className="space-y-0.5">
+          <aside className="w-56 shrink-0 border-r border-slate-200 bg-slate-50/70 p-3 flex flex-col justify-between text-xs select-none">
+            <div className="space-y-4">
+              {/* Library Navigation */}
+              <nav className="space-y-1">
                 <Link
                   href="/archive"
                   className={`flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 transition ${
                     pathname === "/archive"
-                      ? "bg-indigo-600 text-white font-medium shadow-sm"
-                      : "text-slate-300 hover:bg-white/10 hover:text-white"
+                      ? "bg-slate-900 text-white font-medium shadow-xs"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >
-                  <Image className="h-4 w-4 text-indigo-400" />
+                  <Image className="h-4 w-4 text-indigo-500" />
                   <span>All Memories</span>
                 </Link>
                 <Link
                   href="/groups"
                   className={`flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 transition ${
                     pathname === "/groups"
-                      ? "bg-indigo-600 text-white font-medium shadow-sm"
-                      : "text-slate-300 hover:bg-white/10 hover:text-white"
+                      ? "bg-slate-900 text-white font-medium shadow-xs"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >
-                  <Users className="h-4 w-4 text-emerald-400" />
+                  <Users className="h-4 w-4 text-emerald-500" />
                   <span>Community Circles</span>
                 </Link>
                 <Link
                   href="/upload"
                   className={`flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 transition ${
                     pathname === "/upload"
-                      ? "bg-indigo-600 text-white font-medium shadow-sm"
-                      : "text-slate-300 hover:bg-white/10 hover:text-white"
+                      ? "bg-slate-900 text-white font-medium shadow-xs"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >
-                  <UploadCloud className="h-4 w-4 text-yellow-400" />
+                  <UploadCloud className="h-4 w-4 text-amber-500" />
                   <span>Deposit Media</span>
                 </Link>
               </nav>
+
+              {/* Administration Section */}
+              {isAdmin && (
+                <div>
+                  <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    Administration
+                  </div>
+                  <nav className="space-y-0.5">
+                    <Link
+                      href="/admin"
+                      className={`flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 transition ${
+                        pathname === "/admin"
+                          ? "bg-slate-900 text-white font-medium shadow-xs"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                      }`}
+                    >
+                      <Shield className="h-4 w-4 text-purple-500" />
+                      <span>Mission Control</span>
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                    >
+                      <KeyRound className="h-4 w-4 text-amber-500" />
+                      <span>Invite Key Portal</span>
+                    </Link>
+                  </nav>
+                </div>
+              )}
             </div>
 
-            {/* College Collections */}
-            <div>
-              <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                Collections
-              </div>
-              <nav className="space-y-0.5 text-slate-300">
-                <div className="flex items-center justify-between rounded-lg px-2.5 py-1 hover:bg-white/5 cursor-pointer">
-                  <span className="flex items-center">
-                    <Calendar className="mr-2 h-3.5 w-3.5 text-indigo-400" /> Class of 2026
-                  </span>
-                  <span className="rounded bg-white/10 px-1.5 py-0.2 text-[10px] font-mono text-slate-400">
-                    Vault
-                  </span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg px-2.5 py-1 hover:bg-white/5 cursor-pointer">
-                  <span className="flex items-center">
-                    <Sparkles className="mr-2 h-3.5 w-3.5 text-amber-400" /> Freshers & Fest
-                  </span>
-                </div>
-              </nav>
-            </div>
-
-            {/* Administration Section */}
-            {isAdmin && (
-              <div>
-                <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                  Administration
-                </div>
-                <nav className="space-y-0.5">
-                  <Link
-                    href="/admin"
-                    className={`flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 transition ${
-                      pathname === "/admin"
-                        ? "bg-indigo-600 text-white font-medium shadow-sm"
-                        : "text-slate-300 hover:bg-white/10 hover:text-white"
-                    }`}
-                  >
-                    <Shield className="h-4 w-4 text-purple-400" />
-                    <span>Mission Control</span>
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="flex items-center space-x-2.5 rounded-lg px-2.5 py-1.5 text-slate-300 hover:bg-white/10 hover:text-white transition"
-                  >
-                    <KeyRound className="h-4 w-4 text-yellow-400" />
-                    <span>Invite Key Portal</span>
-                  </Link>
-                </nav>
-              </div>
-            )}
-
-            {/* Vault Storage Status in Sidebar Footer */}
-            <div className="pt-4 border-t border-white/10 text-[11px] text-slate-400 space-y-1 px-1">
+            {/* Storage Status in Sidebar Footer */}
+            <div className="pt-3 border-t border-slate-200 text-[11px] text-slate-500 space-y-1 px-1">
               <div className="flex justify-between">
                 <span>Vault Status</span>
-                <span className="text-emerald-400 font-mono">SEALED</span>
-              </div>
-              <div className="h-1.5 w-full rounded-full bg-slate-800 overflow-hidden">
-                <div className="h-full w-2/5 rounded-full bg-gradient-to-r from-indigo-500 to-purple-500" />
+                <span className="text-emerald-600 font-mono font-medium">PROTECTED</span>
               </div>
             </div>
           </aside>
         )}
 
         {/* Content Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white">
           {children}
         </main>
       </div>
