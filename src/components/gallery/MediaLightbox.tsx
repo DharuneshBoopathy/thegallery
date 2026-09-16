@@ -2,7 +2,22 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
-import { X, ChevronLeft, ChevronRight, Calendar, Camera, User, Tag, Maximize2, ShieldCheck, Play, Pause, Volume2, VolumeX } from "lucide-react";
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Camera,
+  User,
+  Tag,
+  Maximize2,
+  ShieldCheck,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  RotateCw,
+} from "lucide-react";
 
 export interface PersonTagItem {
   id: string;
@@ -38,8 +53,12 @@ interface LightboxProps {
 
 export default function MediaLightbox({ items, initialIndex, onClose }: LightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [rotation, setRotation] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isScrubbing, setIsScrubbing] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [tagBox, setTagBox] = useState<{ x: number; y: number } | null>(null);
@@ -50,6 +69,13 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const current = items[currentIndex];
+
+  useEffect(() => {
+    setRotation(0);
+    setCurrentTime(0);
+    setDuration(0);
+    setIsPlaying(false);
+  }, [currentIndex]);
 
   const handlePrev = useCallback(() => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
@@ -112,6 +138,34 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
     if (!videoRef.current) return;
     videoRef.current.muted = !isMuted;
     setIsMuted(!isMuted);
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current && !isScrubbing) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration || 0);
+      setCurrentTime(videoRef.current.currentTime || 0);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const targetTime = parseFloat(e.target.value);
+    setCurrentTime(targetTime);
+    if (videoRef.current) {
+      videoRef.current.currentTime = targetTime;
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds < 0) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
   const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -178,7 +232,21 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 sm:space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-3">
+          <button
+            onClick={() => setRotation((prev) => (prev + 90) % 360)}
+            title="Rotate 90° Clockwise"
+            className="flex items-center rounded-xl px-3 py-1.5 text-xs font-medium transition bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 shadow-2xs"
+          >
+            <RotateCw className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
+            <span>Rotate</span>
+            {rotation > 0 && (
+              <span className="ml-1 text-[10px] font-mono text-slate-500">
+                {rotation}°
+              </span>
+            )}
+          </button>
+
           {!current.isVideo && (
             <button
               onClick={() => {
@@ -188,7 +256,7 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
               className={`flex items-center rounded-xl px-3 py-1.5 text-xs font-medium transition ${
                 showTagModal
                   ? "bg-slate-900 text-white font-semibold shadow-xs"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 shadow-2xs"
               }`}
             >
               <User className="mr-1.5 h-3.5 w-3.5" />
@@ -196,9 +264,6 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
             </button>
           )}
 
-          <div className="hidden sm:flex items-center text-[11px] text-slate-500">
-            <ShieldCheck className="mr-1 h-3.5 w-3.5 text-emerald-600" /> Protected Archive
-          </div>
           <button
             onClick={onClose}
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800 transition"
@@ -240,42 +305,71 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
                 ref={videoRef}
                 src={current.originalUrl}
                 playsInline
+                onClick={togglePlay}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
+                onEnded={() => setIsPlaying(false)}
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
                 controlsList="nodownload noplaybackrate"
                 disablePictureInPicture
-                className="max-h-[75vh] max-w-[90vw] rounded-2xl shadow-2xl object-contain border border-slate-200/40"
+                style={{
+                  transform: rotation ? `rotate(${rotation}deg)` : undefined,
+                  transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+                className="max-h-[72vh] max-w-[90vw] rounded-2xl shadow-2xl object-contain border border-slate-200/40 cursor-pointer"
               />
-              {/* Custom Player Toolbar */}
-              <div className="mt-3 flex items-center space-x-3 rounded-full bg-white/95 px-4 py-1.5 backdrop-blur-md border border-slate-200 shadow-md">
-                <button onClick={togglePlay} className="p-1 text-slate-800 hover:opacity-80">
-                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              {/* Custom Player Toolbar with Video Scrollbar / Scrubber */}
+              <div className="mt-3 flex w-[90vw] max-w-xl items-center space-x-3 rounded-2xl bg-white/95 px-4 py-2.5 backdrop-blur-xl border border-slate-200 shadow-md">
+                {/* Play / Pause Toggle */}
+                <button
+                  onClick={togglePlay}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-white hover:bg-slate-800 transition shadow-xs"
+                  title={isPlaying ? "Pause" : "Play"}
+                >
+                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 translate-x-0.5" />}
                 </button>
-                <button onClick={toggleMute} className="p-1 text-slate-800 hover:opacity-80">
+
+                {/* Current Time Elapsed */}
+                <span className="shrink-0 text-[11px] font-mono font-medium text-slate-700 min-w-[32px] text-right">
+                  {formatTime(currentTime)}
+                </span>
+
+                {/* Video Scrollbar / Timeline Slider */}
+                <div className="relative flex flex-1 items-center">
+                  <input
+                    type="range"
+                    min={0}
+                    max={duration || 100}
+                    step={0.1}
+                    value={currentTime}
+                    onChange={handleSeek}
+                    onMouseDown={() => setIsScrubbing(true)}
+                    onMouseUp={() => setIsScrubbing(false)}
+                    onTouchStart={() => setIsScrubbing(true)}
+                    onTouchEnd={() => setIsScrubbing(false)}
+                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-slate-900 focus:outline-none transition"
+                    style={{
+                      background: `linear-gradient(to right, #0f172a ${(currentTime / (duration || 1)) * 100}%, #e2e8f0 ${(currentTime / (duration || 1)) * 100}%)`,
+                    }}
+                    title={`Seek: ${formatTime(currentTime)} / ${formatTime(duration)}`}
+                  />
+                </div>
+
+                {/* Total Duration */}
+                <span className="shrink-0 text-[11px] font-mono text-slate-400 min-w-[32px]">
+                  {formatTime(duration)}
+                </span>
+
+                {/* Mute Toggle */}
+                <button
+                  onClick={toggleMute}
+                  className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+                  title={isMuted ? "Unmute" : "Mute"}
+                >
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </button>
-                {current.durationSeconds && (
-                  <span className="text-[10px] font-mono text-slate-500">
-                    {Math.round(current.durationSeconds)}s
-                  </span>
-                )}
               </div>
-
-              {/* Dynamic Forensic Watermark Overlay */}
-              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 opacity-20 select-none">
-                <div className="flex justify-between text-[11px] font-mono text-white/70">
-                  <span>THE GALLERY ARCHIVE</span>
-                  <span>{new Date().toISOString().split("T")[0]}</span>
-                </div>
-                <div className="self-center transform -rotate-12 text-sm font-mono tracking-widest text-white/50">
-                  VIEWER SESSION CONFIDENTIAL
-                </div>
-                <div className="flex justify-between text-[10px] font-mono text-white/50">
-                  <span>DO NOT DISTRIBUTE</span>
-                  <span>TG-SEC-VAULT</span>
-                </div>
-              </div>
-
             </div>
           ) : (
             <div
@@ -287,7 +381,11 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
                 src={current.originalUrl}
                 alt={current.originalFilename}
                 draggable={false}
-                className="max-h-[75vh] sm:max-h-[80vh] max-w-[92vw] sm:max-w-[85vw] object-contain rounded-2xl shadow-2xl transition duration-200 border border-white/10"
+                style={{
+                  transform: rotation ? `rotate(${rotation}deg)` : undefined,
+                  transition: "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+                className="max-h-[75vh] sm:max-h-[80vh] max-w-[92vw] sm:max-w-[85vw] object-contain rounded-2xl shadow-2xl border border-white/10"
               />
 
               {/* Dynamic Person Tag Pins & Overlays */}
@@ -316,22 +414,6 @@ export default function MediaLightbox({ items, initialIndex, onClose }: Lightbox
                   <div className="h-8 w-8 rounded-full border-2 border-dashed border-white bg-white/20 animate-spin" />
                 </div>
               )}
-
-              {/* Dynamic Forensic Watermark Overlay */}
-              <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-6 opacity-25 select-none">
-                <div className="flex justify-between text-[11px] font-mono text-white/70">
-                  <span>THE GALLERY ARCHIVE</span>
-                  <span>{new Date().toISOString().split("T")[0]}</span>
-                </div>
-                <div className="self-center transform -rotate-12 text-sm font-mono tracking-widest text-white/50">
-                  CONFIDENTIAL • COMMUNITY VAULT
-                </div>
-                <div className="flex justify-between text-[10px] font-mono text-white/50">
-                  <span>DO NOT DISTRIBUTE</span>
-                  <span>TG-SEC-VAULT</span>
-                </div>
-              </div>
-
             </div>
           )}
         </div>

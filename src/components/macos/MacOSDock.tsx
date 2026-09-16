@@ -36,12 +36,7 @@ export default function MacOSDock({ isAdmin, onOpenApp }: DockProps) {
       href: "/archive",
       icon: <PhotosAppIcon />,
     },
-    {
-      id: "circles",
-      name: "Community Circles",
-      href: "/groups",
-      icon: <GroupsAppIcon />,
-    },
+
     {
       id: "upload",
       name: "Deposit Media",

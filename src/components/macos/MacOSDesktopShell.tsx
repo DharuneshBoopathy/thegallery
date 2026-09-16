@@ -87,19 +87,7 @@ export default function MacOSDesktopShell({
                       All Memories
                     </span>
                   </Link>
-                  <Link
-                    href="/groups"
-                    className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs transition ${
-                      pathname === "/groups"
-                        ? "bg-slate-900 text-white font-semibold shadow-xs"
-                        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                    }`}
-                  >
-                    <span className="flex items-center">
-                      <Users className="mr-2.5 h-4 w-4" />
-                      Community Circles
-                    </span>
-                  </Link>
+
                   <Link
                     href="/upload"
                     className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs transition ${
