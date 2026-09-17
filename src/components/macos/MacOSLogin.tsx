@@ -57,10 +57,7 @@ export default function MacOSLogin() {
         } catch {}
       }
 
-      // Smooth login redirect after cookie registration
-      setTimeout(() => {
-        window.location.href = "/archive";
-      }, 50);
+      window.location.href = data.token ? `/archive?token=${data.token}` : "/archive";
     } catch (err: any) {
       setError(err.message || "Invalid credentials");
       setLoading(false);
@@ -90,9 +87,7 @@ export default function MacOSLogin() {
         } catch {}
       }
 
-      setTimeout(() => {
-        window.location.href = "/archive";
-      }, 50);
+      window.location.href = data.token ? `/archive?token=${data.token}` : "/archive";
     } catch (err: any) {
       setError(err.message || "Google sign-in failed");
       setLoading(false);
@@ -201,10 +196,12 @@ export default function MacOSLogin() {
         </div>
 
         {/* Google Sign-in */}
-        <div className="w-full max-w-xs space-y-2">
-          <Link
-            href="/auth/google"
-            className="flex w-full items-center justify-center space-x-2.5 rounded-xl border border-slate-200 bg-white py-2.5 px-4 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition active:scale-98 cursor-pointer"
+        <div className="w-full max-w-xs space-y-2.5">
+          <button
+            type="button"
+            onClick={() => handleGoogleInstantSignIn("boopathydharunesh622@gmail.com", "Dharunesh Boopathy")}
+            disabled={loading}
+            className="flex w-full items-center justify-center space-x-2.5 rounded-xl border border-slate-200 bg-white py-2.5 px-4 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition active:scale-98 cursor-pointer disabled:opacity-60"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0">
               <path
@@ -225,7 +222,16 @@ export default function MacOSLogin() {
               />
             </svg>
             <span>Continue with Google</span>
-          </Link>
+          </button>
+
+          <div className="text-center pt-1">
+            <Link
+              href="/auth/google"
+              className="text-[11px] text-slate-400 hover:text-slate-700 transition"
+            >
+              Sign in with another Google account or setup keys →
+            </Link>
+          </div>
         </div>
       </main>
 

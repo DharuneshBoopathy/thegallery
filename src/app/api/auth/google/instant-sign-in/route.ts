@@ -27,14 +27,27 @@ export async function POST(req: Request) {
       status: user.status,
     };
 
-    const token = signAuthToken(sessionUser);
-    await setAuthCookie(token);
+    const proto = req.headers.get("x-forwarded-proto") || "http";
+    const isHttps = proto === "https" || req.url.startsWith("https:");
 
-    return NextResponse.json({
+    const token = signAuthToken(sessionUser);
+    await setAuthCookie(token, req);
+
+    const res = NextResponse.json({
       message: "Google sign-in successful",
       user: sessionUser,
       token,
     });
+
+    res.cookies.set("aj_auth_token", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+      secure: isHttps,
+      httpOnly: false,
+    });
+
+    return res;
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || "Failed to sign in with Google" },

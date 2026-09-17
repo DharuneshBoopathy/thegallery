@@ -8,11 +8,12 @@ export function middleware(request: NextRequest) {
   const clientIp = request.headers.get("x-forwarded-for") || "127.0.0.1";
 
   // Rate Limiting on sensitive endpoints (PRD Section 19.7)
-  if (pathname.startsWith("/api/")) {
+  const isLocalhost = clientIp === "127.0.0.1" || clientIp === "::1" || clientIp === "localhost";
+  if (pathname.startsWith("/api/") && !isLocalhost) {
     const isAuthEndpoint = pathname.startsWith("/api/auth");
     const limitOptions = isAuthEndpoint
-      ? { windowMs: 60 * 1000, maxRequests: 15, prefix: "auth" } // 15 requests/min for auth
-      : { windowMs: 60 * 1000, maxRequests: 120, prefix: "api" }; // 120 requests/min for API
+      ? { windowMs: 60 * 1000, maxRequests: 60, prefix: "auth" } // 60 requests/min for auth
+      : { windowMs: 60 * 1000, maxRequests: 240, prefix: "api" }; // 240 requests/min for API
 
     const rateResult = checkRateLimit(clientIp, limitOptions);
 
@@ -37,6 +38,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
     pathname.startsWith("/request-access") ||
+    pathname.startsWith("/auth") ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/access-requests") ||
     pathname.startsWith("/api/media/file") ||
@@ -44,19 +46,41 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon.ico");
 
+  // Accept token from cookie or query param (for seamless post-auth redirection)
+  const queryToken = request.nextUrl.searchParams.get("token");
+  const effectiveToken = token || queryToken;
 
-  if (!token && !isPublicRoute) {
+  if (!effectiveToken && !isPublicRoute) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("from", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // If user is logged in and visits /login or /register, redirect to /archive
-  if (token && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/archive", request.url));
+  if (effectiveToken && (pathname === "/login" || pathname === "/register")) {
+    const archiveUrl = new URL("/archive", request.url);
+    const res = NextResponse.redirect(archiveUrl);
+    if (queryToken) {
+      res.cookies.set("aj_auth_token", queryToken, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: "lax",
+        httpOnly: false,
+      });
+    }
+    return res;
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (queryToken) {
+    response.cookies.set("aj_auth_token", queryToken, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+      httpOnly: false,
+    });
+  }
+  return response;
 }
 
 export const config = {

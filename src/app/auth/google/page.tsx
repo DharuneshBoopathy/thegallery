@@ -19,12 +19,20 @@ export default function GoogleAuthPage() {
         body: JSON.stringify({ email, fullName }),
       });
 
+      const data = await res.json();
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Sign in failed");
+        throw new Error(data.error || "Sign in failed");
       }
 
-      window.location.href = "/archive";
+      if (data.token) {
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;${isHttps ? " Secure;" : ""}`;
+        try {
+          localStorage.setItem("aj_auth_token", data.token);
+        } catch {}
+      }
+
+      window.location.href = data.token ? `/archive?token=${data.token}` : "/archive";
     } catch (err: any) {
       alert(err.message);
       setLoading(false);
