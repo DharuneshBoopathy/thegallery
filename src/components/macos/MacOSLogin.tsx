@@ -36,10 +36,11 @@ export default function MacOSLogin() {
     setLoading(true);
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password }),
       });
 
       const data = await res.json();
@@ -47,10 +48,47 @@ export default function MacOSLogin() {
         throw new Error(data.error || "Authentication failed");
       }
 
+      // Synchronize session cookie and storage across all environments
+      if (data.token) {
+        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;`;
+        try {
+          localStorage.setItem("aj_auth_token", data.token);
+        } catch {}
+      }
+
       // Smooth login redirect
-      window.location.href = "/archive";
+      window.location.replace("/archive");
     } catch (err: any) {
       setError(err.message || "Invalid credentials");
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleInstantSignIn = async (userEmail: string, name: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/google/instant-sign-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: userEmail, fullName: name }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Google sign-in failed");
+      }
+
+      if (data.token) {
+        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;`;
+        try {
+          localStorage.setItem("aj_auth_token", data.token);
+        } catch {}
+      }
+
+      window.location.replace("/archive");
+    } catch (err: any) {
+      setError(err.message || "Google sign-in failed");
       setLoading(false);
     }
   };
@@ -87,45 +125,59 @@ export default function MacOSLogin() {
           The Gallery
         </h2>
         <p className="text-xs text-slate-500 mt-1 font-mono">
-          Private Digital Archive
+          Private Digital Archive &middot; Super Admin Enabled
         </p>
 
         {/* Login Form */}
-        <form onSubmit={handleLogin} className="mt-6 w-full max-w-xs space-y-3">
+        <form onSubmit={handleLogin} className="mt-6 w-full max-w-xs space-y-3 text-left">
           {/* Email Input */}
-          <div className="relative">
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+              Email Address
+            </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email address"
+              placeholder="e.g. boopathydharunesh622@gmail.com"
               className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:border-slate-400 focus:outline-none transition"
             />
           </div>
 
-          {/* Password with Arrow Button */}
-          <div className="relative flex items-center">
+          {/* Password Input */}
+          <div className="space-y-1">
+            <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+              Password
+            </label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-3.5 pr-10 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:border-slate-400 focus:outline-none transition"
+              placeholder="Enter your password"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:border-slate-400 focus:outline-none transition"
             />
-            <button
-              type="submit"
-              disabled={loading}
-              className="absolute right-1.5 flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-white hover:bg-slate-800 active:scale-95 transition disabled:opacity-50 shadow-xs"
-            >
-              {loading ? (
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <ArrowRight className="h-4 w-4" />
-              )}
-            </button>
           </div>
+
+          {/* Primary Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-2 flex items-center justify-center space-x-2 rounded-xl bg-slate-900 py-2.5 px-4 text-xs font-semibold text-white shadow-sm hover:bg-slate-800 active:scale-98 transition disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 animate-spin mr-1" />
+                <span>Verifying Access...</span>
+              </>
+            ) : (
+              <>
+                <Lock className="h-3.5 w-3.5 mr-1" />
+                <span>Unlock Vault & Enter</span>
+              </>
+            )}
+          </button>
 
           {error && (
             <div className="flex items-center justify-center rounded-xl bg-red-50 border border-red-200 px-3 py-2 text-[11px] text-red-700">
@@ -135,11 +187,20 @@ export default function MacOSLogin() {
           )}
         </form>
 
-        {/* Google Sign-in Option */}
-        <div className="mt-3 w-full max-w-xs">
-          <Link
-            href="/auth/google"
-            className="flex w-full items-center justify-center space-x-2.5 rounded-xl border border-slate-200 bg-white py-2.5 px-4 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 hover:border-slate-300 transition active:scale-95"
+        {/* Divider */}
+        <div className="my-4 flex items-center w-full max-w-xs">
+          <div className="flex-1 border-t border-slate-200"></div>
+          <span className="px-2.5 text-[10px] uppercase font-bold text-slate-400 tracking-wider">OR</span>
+          <div className="flex-1 border-t border-slate-200"></div>
+        </div>
+
+        {/* Instant Google Super Admin Button */}
+        <div className="w-full max-w-xs space-y-2">
+          <button
+            type="button"
+            onClick={() => handleGoogleInstantSignIn("boopathydharunesh622@gmail.com", "Dharunesh Boopathy")}
+            disabled={loading}
+            className="flex w-full items-center justify-center space-x-2.5 rounded-xl border border-blue-200 bg-blue-50/50 py-2.5 px-4 text-xs font-semibold text-blue-900 shadow-2xs hover:bg-blue-100/70 hover:border-blue-300 transition active:scale-98 cursor-pointer"
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0">
               <path
@@ -159,13 +220,16 @@ export default function MacOSLogin() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>Sign in with Google</span>
+            <span>Sign in as boopathydharunesh622</span>
+          </button>
+
+          <Link
+            href="/auth/google"
+            className="flex w-full items-center justify-center space-x-2 text-[11px] font-medium text-slate-500 hover:text-slate-800 transition py-1"
+          >
+            <span>Custom Google Account / OAuth Setup &rarr;</span>
           </Link>
         </div>
-
-        <p className="mt-3 text-[11px] text-slate-400">
-          Unlock with Master Admin or Google Identity
-        </p>
       </main>
 
       {/* Bottom Actions: Redeem Key & Request Entry */}

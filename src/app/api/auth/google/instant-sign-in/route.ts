@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       message: "Google sign-in successful",
       user: sessionUser,
+      token,
     });
   } catch (err: any) {
     return NextResponse.json(

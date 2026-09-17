@@ -65,8 +65,7 @@ export async function getSessionUser(): Promise<AuthSessionUser | null> {
 export async function setAuthCookie(token: string) {
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    httpOnly: false,
     sameSite: "lax",
     path: "/",
     maxAge: TOKEN_MAX_AGE,
