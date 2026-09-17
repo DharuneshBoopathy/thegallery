@@ -48,50 +48,54 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. Lookup in local Vault Data
-    const vaultUser = await findVaultUserByEmail(email);
-    if (vaultUser) {
-      if (vaultUser.status !== "ACTIVE") {
-        return NextResponse.json(
-          { error: "This account has been suspended or deactivated. Please contact an archivist." },
-          { status: 403 }
-        );
-      }
-
-      // Check password if set
-      if (vaultUser.passwordHash) {
-        const isMatch = await bcrypt.compare(password, vaultUser.passwordHash);
-        if (!isMatch && password !== "AdminMaster2026!") {
-          return NextResponse.json(
-            { error: "Invalid email or password" },
-            { status: 401 }
-          );
-        }
-      }
-
-      const role = vaultUser.role;
-      const sessionUser = {
-        id: vaultUser.id,
-        email: vaultUser.email,
-        fullName: vaultUser.fullName,
-        role,
-        status: vaultUser.status,
-      };
-
-      const token = signAuthToken(sessionUser);
-      await setAuthCookie(token);
-
-      return NextResponse.json({
-        message: "Login successful",
-        user: sessionUser,
-        token,
+    // 2. Lookup in local Vault Data (or create pending account for new email login)
+    let vaultUser = await findVaultUserByEmail(email);
+    if (!vaultUser) {
+      // Auto-register new email login as unapproved/pending member
+      vaultUser = await createVaultUser({
+        email,
+        fullName: email.split("@")[0],
+        password,
+        role: "MEMBER",
+        status: "PENDING_SETUP",
       });
     }
 
-    return NextResponse.json(
-      { error: "Invalid email or password" },
-      { status: 401 }
-    );
+    if (vaultUser.status === "SUSPENDED" || vaultUser.status === "DEACTIVATED") {
+      return NextResponse.json(
+        { error: "This account has been suspended or deactivated. Please contact an archivist." },
+        { status: 403 }
+      );
+    }
+
+    // Check password if set
+    if (vaultUser.passwordHash) {
+      const isMatch = await bcrypt.compare(password, vaultUser.passwordHash);
+      if (!isMatch && password !== "AdminMaster2026!") {
+        return NextResponse.json(
+          { error: "Invalid email or password" },
+          { status: 401 }
+        );
+      }
+    }
+
+    const role = vaultUser.role;
+    const sessionUser = {
+      id: vaultUser.id,
+      email: vaultUser.email,
+      fullName: vaultUser.fullName,
+      role,
+      status: vaultUser.status,
+    };
+
+    const token = signAuthToken(sessionUser);
+    await setAuthCookie(token);
+
+    return NextResponse.json({
+      message: "Login successful",
+      user: sessionUser,
+      token,
+    });
   } catch (error: any) {
     console.error("Login route error:", error);
     return NextResponse.json(

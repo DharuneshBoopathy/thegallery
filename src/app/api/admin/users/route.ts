@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
-import { getVaultData } from "@/lib/vaultData";
+import { getVaultData, updateVaultUserStatus } from "@/lib/vaultData";
 
 // GET /api/admin/users - List users with roles and status
 export async function GET(req: Request) {
@@ -36,6 +36,34 @@ export async function GET(req: Request) {
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "Failed to fetch users" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/admin/users - Update user status (approve to ACTIVE, etc.)
+export async function PATCH(req: Request) {
+  try {
+    const user = await getSessionUser();
+    if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { userId, status } = body;
+    if (!userId || !status) {
+      return NextResponse.json({ error: "userId and status are required" }, { status: 400 });
+    }
+
+    const success = updateVaultUserStatus(userId, status);
+    if (!success) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: `User status updated to ${status}`, success: true });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error.message || "Failed to update user" },
       { status: 500 }
     );
   }

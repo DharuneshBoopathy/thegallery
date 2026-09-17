@@ -164,6 +164,25 @@ export default function AdminConsolePage() {
     }
   };
 
+  const handleApproveUser = async (userId: string) => {
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, status: "ACTIVE" }),
+      });
+      if (res.ok) {
+        fetchUsers();
+        fetchMetrics();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Approval failed");
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to approve user");
+    }
+  };
+
   const copyInviteLink = (code: string) => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
     const link = `${origin}/register?code=${encodeURIComponent(code)}`;
@@ -543,9 +562,26 @@ export default function AdminConsolePage() {
                               </span>
                             </td>
                             <td className="py-3">
-                              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-mono text-emerald-700 font-semibold border border-emerald-200">
-                                {u.status}
-                              </span>
+                              <div className="flex items-center space-x-2">
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider border ${
+                                    u.status === "ACTIVE"
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                      : "bg-amber-50 text-amber-700 border-amber-200"
+                                  }`}
+                                >
+                                  {u.status === "ACTIVE" ? "Approved" : "Pending"}
+                                </span>
+                                {u.status !== "ACTIVE" && !isSuper && (
+                                  <button
+                                    onClick={() => handleApproveUser(u.id)}
+                                    className="inline-flex items-center space-x-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-[10px] font-semibold text-white hover:bg-emerald-700 active:scale-95 transition shadow-2xs cursor-pointer"
+                                  >
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    <span>Approve</span>
+                                  </button>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3 text-slate-400 font-mono text-[11px]">
                               {new Date(u.createdAt).toLocaleDateString()}

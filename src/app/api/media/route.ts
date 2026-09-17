@@ -6,7 +6,19 @@ import { queryArchiveEntries } from "@/lib/instagramArchive";
 export async function GET(req: Request) {
   try {
     const user = await getSessionUser();
-    // Allow authenticated user, with fallback for local access
+    const isApproved = user && (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || user.status === "ACTIVE");
+
+    // Unapproved users cannot view images/videos
+    if (!isApproved) {
+      return NextResponse.json({
+        items: [],
+        nextCursor: null,
+        total: 0,
+        unapproved: true,
+        message: "Account pending approval. Archive media is restricted to approved members.",
+      });
+    }
+
     const { searchParams } = new URL(req.url);
     const cursor = searchParams.get("cursor");
     const limit = Math.min(Number(searchParams.get("limit")) || 30, 60);

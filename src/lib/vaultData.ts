@@ -197,6 +197,7 @@ export async function createVaultUser(params: {
   fullName: string;
   password?: string;
   role?: "SUPER_ADMIN" | "ADMIN" | "MEMBER" | "CONTRIBUTOR" | "VIEWER";
+  status?: "ACTIVE" | "PENDING_SETUP" | "SUSPENDED" | "DEACTIVATED";
   invitedById?: string;
   avatarUrl?: string;
 }): Promise<VaultUser> {
@@ -214,9 +215,12 @@ export async function createVaultUser(params: {
     if (params.password) existing.passwordHash = passwordHash;
     if (params.fullName) existing.fullName = params.fullName;
     if (isSuper) existing.role = "SUPER_ADMIN";
+    if (params.status) existing.status = params.status;
     saveVaultData(data);
     return existing;
   }
+
+  const userStatus = isSuper ? "ACTIVE" : (params.status || "PENDING_SETUP");
 
   const newUser: VaultUser = {
     id: crypto.randomUUID(),
@@ -224,7 +228,7 @@ export async function createVaultUser(params: {
     fullName: params.fullName,
     passwordHash,
     role: isSuper ? "SUPER_ADMIN" : params.role || "MEMBER",
-    status: "ACTIVE",
+    status: userStatus,
     createdAt: new Date().toISOString(),
     invitedById: params.invitedById,
     avatarUrl: params.avatarUrl,
@@ -233,6 +237,18 @@ export async function createVaultUser(params: {
   data.users.push(newUser);
   saveVaultData(data);
   return newUser;
+}
+
+export function updateVaultUserStatus(
+  userId: string,
+  status: "ACTIVE" | "PENDING_SETUP" | "SUSPENDED" | "DEACTIVATED"
+): boolean {
+  const data = getVaultData();
+  const user = data.users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase());
+  if (!user) return false;
+  user.status = status;
+  saveVaultData(data);
+  return true;
 }
 
 // ---------------- INVITE CODE OPERATIONS ----------------
