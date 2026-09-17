@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { GroupType } from "@prisma/client";
 import { z } from "zod";
+import crypto from "crypto";
 
 const createGroupSchema = z.object({
   name: z.string().trim().min(2, "Group name must be at least 2 characters").max(60),

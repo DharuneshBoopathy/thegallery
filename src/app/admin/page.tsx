@@ -20,6 +20,7 @@ import {
   X,
   ExternalLink,
   UserPlus,
+  LogOut,
 } from "lucide-react";
 import MacOSDesktopShell from "@/components/macos/MacOSDesktopShell";
 
@@ -219,6 +220,22 @@ export default function AdminConsolePage() {
             <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-mono text-blue-700 font-semibold shadow-2xs">
               SUPER ADMIN ACTIVE
             </span>
+            <button
+              onClick={async () => {
+                try {
+                  await fetch("/api/auth/logout", { method: "POST" });
+                } catch {}
+                document.cookie = "aj_auth_token=; path=/; max-age=0; SameSite=Lax;";
+                try {
+                  localStorage.removeItem("aj_auth_token");
+                } catch {}
+                window.location.href = "/login";
+              }}
+              className="flex items-center space-x-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-medium text-slate-700 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition cursor-pointer shadow-2xs"
+            >
+              <LogOut className="h-3 w-3" />
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
 

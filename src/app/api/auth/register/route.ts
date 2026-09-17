@@ -64,7 +64,9 @@ export async function POST(req: Request) {
       role: assignedRole,
     });
 
-    // 4. Generate Session Token and set cookie
+    const proto = req.headers.get("x-forwarded-proto") || "http";
+    const isHttps = proto === "https" || req.url.startsWith("https:");
+
     const token = signAuthToken({
       id: user.id,
       email: user.email,
@@ -73,10 +75,11 @@ export async function POST(req: Request) {
       status: user.status,
     });
 
-    await setAuthCookie(token);
+    await setAuthCookie(token, req);
 
-    return NextResponse.json({
+    const res = NextResponse.json({
       message: "Registration successful. Welcome to The Gallery vault.",
+      token,
       user: {
         id: user.id,
         email: user.email,
@@ -84,6 +87,16 @@ export async function POST(req: Request) {
         role: user.role,
       },
     });
+
+    res.cookies.set("aj_auth_token", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+      secure: isHttps,
+      httpOnly: false,
+    });
+
+    return res;
   } catch (error: any) {
     console.error("Registration error:", error);
     return NextResponse.json(

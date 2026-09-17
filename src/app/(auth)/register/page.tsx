@@ -30,8 +30,15 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      router.push("/archive");
-      router.refresh();
+      if (data.token) {
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;${isHttps ? " Secure;" : ""}`;
+        try {
+          localStorage.setItem("aj_auth_token", data.token);
+        } catch {}
+      }
+
+      window.location.href = data.token ? `/archive?token=${data.token}` : "/archive";
     } catch (err: any) {
       setError(err.message);
     } finally {

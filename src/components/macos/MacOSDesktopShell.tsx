@@ -10,6 +10,8 @@ import {
   Shield,
   KeyRound,
   Sidebar as SidebarIcon,
+  User,
+  LogOut,
 } from "lucide-react";
 import MacOSMenuBar from "./MacOSMenuBar";
 import MacOSDock from "./MacOSDock";
@@ -36,11 +38,13 @@ export default function MacOSDesktopShell({
 
   const handleLockVault = async () => {
     try {
-      await fetch("/api/auth/me", { method: "POST" });
-      window.location.href = "/login";
-    } catch {
-      window.location.href = "/login";
-    }
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {}
+    document.cookie = "aj_auth_token=; path=/; max-age=0; SameSite=Lax;";
+    try {
+      localStorage.removeItem("aj_auth_token");
+    } catch {}
+    window.location.href = "/login";
   };
 
   return (
@@ -132,12 +136,32 @@ export default function MacOSDesktopShell({
             {/* Bottom Quick Links */}
             <div className="border-t border-slate-200/80 pt-3 space-y-1 text-xs">
               <Link
+                href="/profile"
+                className={`flex items-center rounded-xl px-3 py-2 transition ${
+                  pathname === "/profile"
+                    ? "bg-slate-900 text-white font-semibold shadow-xs"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                }`}
+              >
+                <User className="mr-2.5 h-4 w-4 text-slate-400" />
+                <span>My Credentials</span>
+              </Link>
+
+              <Link
                 href="/register"
                 className="flex items-center rounded-xl px-3 py-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
               >
                 <KeyRound className="mr-2.5 h-4 w-4 text-slate-400" />
                 <span>Invite Codes</span>
               </Link>
+
+              <button
+                onClick={handleLockVault}
+                className="flex w-full items-center rounded-xl px-3 py-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition text-left cursor-pointer"
+              >
+                <LogOut className="mr-2.5 h-4 w-4 text-red-500" />
+                <span>Sign Out</span>
+              </button>
             </div>
           </aside>
         )}
