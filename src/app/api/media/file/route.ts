@@ -13,6 +13,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const rawKey = searchParams.get("key");
     const isThumb = searchParams.get("thumb") === "1";
+    const isDownload = searchParams.get("download") === "true";
 
     if (!rawKey) {
       return new NextResponse("Missing key parameter", { status: 400 });
@@ -23,6 +24,9 @@ export async function GET(req: Request) {
       .replace(/^insta\//, "")
       .replace(/^public\/(photos|videos|derivatives)\//, "");
     const ext = path.extname(filename).toLowerCase();
+    const downloadHeaders: Record<string, string> = isDownload
+      ? { "Content-Disposition": `attachment; filename="${encodeURIComponent(path.basename(filename))}"` }
+      : {};
 
     // 1. Thumbnail requested or thumbnail key
     if (isThumb || filename.includes("_thumb")) {
@@ -136,6 +140,7 @@ export async function GET(req: Request) {
           "Content-Type": contentType,
           "Content-Length": buffer.length.toString(),
           "Cache-Control": "public, max-age=86400, immutable",
+          ...downloadHeaders,
         },
       });
     }
@@ -155,6 +160,7 @@ export async function GET(req: Request) {
           "Content-Type": contentType,
           "Content-Length": buffer.length.toString(),
           "Cache-Control": "public, max-age=86400, immutable",
+          ...downloadHeaders,
         },
       });
     }

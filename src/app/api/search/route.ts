@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, isSuperAdminEmail } from "@/lib/auth";
 import { queryArchiveEntries } from "@/lib/instagramArchive";
 
 // GET /api/search - Instant consolidated archive search engine
 export async function GET(req: Request) {
   try {
     const user = await getSessionUser();
+    const isSuper = isSuperAdminEmail(user?.email);
+    const isApproved = isSuper || user?.role === "ADMIN" || user?.status === "ACTIVE";
+
+    // Unapproved users cannot search or view vault entries
+    if (!isApproved) {
+      return NextResponse.json({ results: [] });
+    }
+
     const { searchParams } = new URL(req.url);
     const query = searchParams.get("q")?.trim() || "";
     const year = searchParams.get("year");

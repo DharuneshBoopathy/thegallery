@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -33,6 +33,24 @@ export default function MacOSDesktopShell({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [spotlightOpen, setSpotlightOpen] = useState(false);
+
+  // Clean URL token from address bar if present
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
+      if (token) {
+        document.cookie = `aj_auth_token=${token}; path=/; max-age=604800; SameSite=Lax;`;
+        try {
+          localStorage.setItem("aj_auth_token", token);
+        } catch {}
+        urlParams.delete("token");
+        const newSearch = urlParams.toString();
+        const cleanUrl = window.location.pathname + (newSearch ? `?${newSearch}` : "") + window.location.hash;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
+  }, []);
 
   const isAdmin = user?.role === "ADMIN" || user?.role === "SUPER_ADMIN";
 

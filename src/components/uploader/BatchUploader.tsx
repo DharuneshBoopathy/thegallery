@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { UploadCloud, CheckCircle, AlertCircle, RefreshCw, Film, Image as ImageIcon, X, Lock, Users, Shield } from "lucide-react";
 
 interface UploadFileItem {
@@ -341,6 +342,25 @@ export default function BatchUploader() {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {/* Completion Banner */}
+      {items.some((i) => i.status === "done") && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-xs text-emerald-900 shadow-sm animate-in fade-in">
+          <div className="flex items-center space-x-2">
+            <CheckCircle className="h-5 w-5 text-emerald-600 shrink-0" />
+            <div>
+              <p className="font-semibold">Media successfully deposited to vault!</p>
+              <p className="text-[11px] text-emerald-700">Files have been version-controlled and processed for viewing.</p>
+            </div>
+          </div>
+          <Link
+            href="/archive"
+            className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition shadow-sm shrink-0"
+          >
+            View in Archive →
+          </Link>
         </div>
       )}
     </div>

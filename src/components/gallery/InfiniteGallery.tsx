@@ -201,6 +201,13 @@ export default function InfiniteGallery() {
                 alt={item.originalFilename}
                 loading="lazy"
                 draggable={false}
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.dataset.triedOriginal) {
+                    target.dataset.triedOriginal = "true";
+                    target.src = item.originalUrl || item.thumbnailUrl;
+                  }
+                }}
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
               />
 

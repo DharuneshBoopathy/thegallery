@@ -118,10 +118,25 @@ export default function GroupsPage() {
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                  <span>Role: <strong className="text-slate-800 font-semibold">{group.myRole}</strong></span>
+                  <span>Role: <strong className="text-slate-800 font-semibold">{group.myRole || "MEMBER"}</strong></span>
                   <span className="text-[10px] text-slate-400">
-                    Created by {group.owner?.fullName?.split(" ")[0]}
+                    Created by {group.owner?.fullName?.split(" ")[0] || "Archivist"}
                   </span>
+                </div>
+
+                <div className="pt-2 flex items-center space-x-2">
+                  <Link
+                    href={`/upload?group=${group.id}`}
+                    className="flex-1 text-center rounded-lg border border-slate-200 bg-slate-50 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition"
+                  >
+                    Deposit Media
+                  </Link>
+                  <Link
+                    href="/archive"
+                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11px] font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition"
+                  >
+                    View All
+                  </Link>
                 </div>
               </div>
             ))}
