@@ -62,21 +62,24 @@ export async function getSessionUser(): Promise<AuthSessionUser | null> {
   return verifyAuthToken(token);
 }
 
-export async function setAuthCookie(token: string) {
+export async function setAuthCookie(token: string, req?: Request) {
   const cookieStore = await cookies();
+  const proto = req ? req.headers.get("x-forwarded-proto") : null;
+  const isHttps = proto === "https" || process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_APP_URL?.startsWith("https://");
+
   cookieStore.set(TOKEN_COOKIE_NAME, token, {
     httpOnly: false,
     sameSite: "lax",
     path: "/",
     maxAge: TOKEN_MAX_AGE,
+    secure: Boolean(isHttps),
   });
 }
 
 export async function clearAuthCookie() {
   const cookieStore = await cookies();
   cookieStore.set(TOKEN_COOKIE_NAME, "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    httpOnly: false,
     sameSite: "lax",
     path: "/",
     maxAge: 0,

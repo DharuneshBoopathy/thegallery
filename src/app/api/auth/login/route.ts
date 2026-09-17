@@ -45,14 +45,27 @@ export async function POST(req: Request) {
         status: "ACTIVE" as const,
       };
 
-      const token = signAuthToken(superUser);
-      await setAuthCookie(token);
+      const proto = req.headers.get("x-forwarded-proto") || "http";
+      const isHttps = proto === "https" || req.url.startsWith("https:");
 
-      return NextResponse.json({
+      const token = signAuthToken(superUser);
+      await setAuthCookie(token, req);
+
+      const res = NextResponse.json({
         message: "Login successful (Super Admin Vault)",
         user: superUser,
         token,
       });
+
+      res.cookies.set("aj_auth_token", token, {
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+        sameSite: "lax",
+        secure: isHttps,
+        httpOnly: false,
+      });
+
+      return res;
     }
 
     // 2. Lookup in local Vault Data (or create pending account for new email login)
@@ -95,14 +108,27 @@ export async function POST(req: Request) {
       status: vaultUser.status,
     };
 
-    const token = signAuthToken(sessionUser);
-    await setAuthCookie(token);
+    const proto = req.headers.get("x-forwarded-proto") || "http";
+    const isHttps = proto === "https" || req.url.startsWith("https:");
 
-    return NextResponse.json({
+    const token = signAuthToken(sessionUser);
+    await setAuthCookie(token, req);
+
+    const res = NextResponse.json({
       message: "Login successful",
       user: sessionUser,
       token,
     });
+
+    res.cookies.set("aj_auth_token", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+      secure: isHttps,
+      httpOnly: false,
+    });
+
+    return res;
   } catch (error: any) {
     console.error("Login route error:", error);
     return NextResponse.json(

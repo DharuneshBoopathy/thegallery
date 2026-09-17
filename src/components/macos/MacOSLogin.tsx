@@ -50,14 +50,17 @@ export default function MacOSLogin() {
 
       // Synchronize session cookie and storage across all environments
       if (data.token) {
-        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;`;
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;${isHttps ? " Secure;" : ""}`;
         try {
           localStorage.setItem("aj_auth_token", data.token);
         } catch {}
       }
 
-      // Smooth login redirect
-      window.location.replace("/archive");
+      // Smooth login redirect after cookie registration
+      setTimeout(() => {
+        window.location.href = "/archive";
+      }, 50);
     } catch (err: any) {
       setError(err.message || "Invalid credentials");
       setLoading(false);
@@ -80,13 +83,16 @@ export default function MacOSLogin() {
       }
 
       if (data.token) {
-        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;`;
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        document.cookie = `aj_auth_token=${data.token}; path=/; max-age=604800; SameSite=Lax;${isHttps ? " Secure;" : ""}`;
         try {
           localStorage.setItem("aj_auth_token", data.token);
         } catch {}
       }
 
-      window.location.replace("/archive");
+      setTimeout(() => {
+        window.location.href = "/archive";
+      }, 50);
     } catch (err: any) {
       setError(err.message || "Google sign-in failed");
       setLoading(false);
