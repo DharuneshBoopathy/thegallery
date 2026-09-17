@@ -70,10 +70,21 @@ export async function GET(req: Request) {
       status: user.status,
     };
 
-    const token = signAuthToken(sessionUser);
-    await setAuthCookie(token);
+    const proto = req.headers.get("x-forwarded-proto") || "http";
+    const isHttps = proto === "https" || req.url.startsWith("https:");
 
-    return NextResponse.redirect(new URL("/archive", req.url));
+    const token = signAuthToken(sessionUser);
+    await setAuthCookie(token, req);
+
+    const res = NextResponse.redirect(new URL(`/archive?token=${token}`, req.url));
+    res.cookies.set("aj_auth_token", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+      secure: isHttps,
+      httpOnly: false,
+    });
+    return res;
   } catch (err: any) {
     console.error("Google OAuth callback error:", err);
     return NextResponse.redirect(
