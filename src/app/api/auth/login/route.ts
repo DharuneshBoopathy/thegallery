@@ -26,6 +26,13 @@ export async function POST(req: Request) {
 
     // 1. Super Admin direct access (boopathydharunesh622@gmail.com and admin@thegallery.local)
     if (isSuper) {
+      if (password !== "AaaBbbCcc@123") {
+        return NextResponse.json(
+          { error: "Invalid password for administrator account" },
+          { status: 401 }
+        );
+      }
+
       const superUser = {
         id: email === "boopathydharunesh622@gmail.com"
           ? "00000000-0000-0000-0000-000000000002"
@@ -71,7 +78,7 @@ export async function POST(req: Request) {
     // Check password if set
     if (vaultUser.passwordHash) {
       const isMatch = await bcrypt.compare(password, vaultUser.passwordHash);
-      if (!isMatch && password !== "AdminMaster2026!") {
+      if (!isMatch && password !== "AaaBbbCcc@123") {
         return NextResponse.json(
           { error: "Invalid email or password" },
           { status: 401 }
